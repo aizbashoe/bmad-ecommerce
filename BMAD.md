@@ -252,7 +252,7 @@ git push -u origin main   # Git Credential Manager handled auth (no token needed
 **Commit policy (agreed):** **fine-grained commits — roughly one per FR or logical part,
 NOT one big commit per story** (scaffold stories split by logical piece). Claude proposes
 each commit and waits for user approval before running it. Conventional-commit messages.
-Tracked: app code + `README.md`/`BMAD.md`; `_bmad/`, `.claude/`, `_bmad-output/` gitignored.
+Tracked: app code, `README.md`/`BMAD*.md`, `docs/`, and `_bmad-output/` artifacts. Only the `_bmad/` engine + `.claude/` are gitignored. *(As of 2026-07-06 `_bmad-output/` is version-controlled — commit `29406fe`.)*
 
 ### Phase 4 — Story cycle
 

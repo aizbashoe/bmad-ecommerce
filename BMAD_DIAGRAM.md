@@ -114,4 +114,4 @@ Every node in the diagram is a Claude Code skill (installed under `.claude/skill
 | **bmad-document-project** (DP) | Generates docs for an existing/brownfield codebase | The codebase | Project documentation |
 | **bmad-quick-dev** (QQ) | Intent-in → code-out for a small standalone change (skips the full story cycle) | A request | Code + a lightweight spec |
 
-*Menu codes match the "Skills used per phase / task" table in [BMAD.md](BMAD.md). All planning/implementation outputs live under `_bmad-output/` (gitignored).*
+*Menu codes match the "Skills used per phase / task" table in [BMAD.md](BMAD.md). All planning/implementation outputs live under `_bmad-output/` (tracked in git; only the `_bmad/` engine + `.claude/` are gitignored).*

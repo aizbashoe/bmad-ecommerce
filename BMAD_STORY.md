@@ -116,7 +116,7 @@ Commit policy for this repo (see `BMAD.md`):
 
 - **Fine-grained** — roughly one commit per FR or logical part, **not** one big commit per story.
 - **Review/verification fixes get their own `fix(...)` commit** (separate from the feature).
-- Only app code + `README.md` / `BMAD*.md` are tracked; `_bmad/`, `.claude/`, `_bmad-output/` are gitignored.
+- Tracked: app code, `README.md` / `BMAD*.md`, `docs/`, and the `_bmad-output/` BMAD artifacts. Only the BMAD **engine** (`_bmad/`, `.claude/`) is gitignored.
 - Claude **proposes each commit and waits for your OK** before running it.
 
 ```bash
