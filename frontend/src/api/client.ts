@@ -47,14 +47,23 @@ export interface ProductPage {
   nextCursor: string | null;
 }
 
+export type SortOption = "price_asc" | "price_desc";
+
 export function listProducts(
-  params: { limit?: number; cursor?: string; search?: string; categories?: string[] } = {},
+  params: {
+    limit?: number;
+    cursor?: string;
+    search?: string;
+    categories?: string[];
+    sort?: SortOption;
+  } = {},
 ): Promise<ProductPage> {
   const qs = new URLSearchParams();
   if (params.limit != null) qs.set("limit", String(params.limit));
   if (params.cursor) qs.set("cursor", params.cursor);
   if (params.search) qs.set("search", params.search);
   for (const c of params.categories ?? []) qs.append("category", c); // repeat for multiple
+  if (params.sort) qs.set("sort", params.sort);
   const suffix = qs.toString() ? `?${qs}` : "";
   return get<ProductPage>(`/products${suffix}`);
 }

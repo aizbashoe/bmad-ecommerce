@@ -4,11 +4,12 @@ import {
   listCategories,
   listProducts,
   type ProductSummary,
+  type SortOption,
 } from "../api/client";
 
-// PLP (Stories 1.3–1.5): paginated product grid with keyword search + category facet.
-// Search/facet changes reset pagination and refetch page 1; "Load more" carries the active
-// search term and selected categories. Sort controls come in 1.6.
+// PLP (Stories 1.3–1.6): paginated product grid with keyword search, category facet, and sort.
+// Search/facet/sort changes reset pagination and refetch page 1; "Load more" carries the
+// active search term, selected categories, and sort.
 export default function ProductListPage() {
   const [items, setItems] = useState<ProductSummary[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -19,9 +20,15 @@ export default function ProductListPage() {
   const [activeSearch, setActiveSearch] = useState(""); // term applied to results
   const [allCategories, setAllCategories] = useState<string[]>([]); // facet options
   const [selected, setSelected] = useState<string[]>([]); // active category filters
+  const [sort, setSort] = useState<SortOption>("price_asc"); // sort order
   const requestId = useRef(0); // latest-wins guard against out-of-order responses
 
-  async function fetchPage(opts: { cursor?: string; search: string; categories: string[] }) {
+  async function fetchPage(opts: {
+    cursor?: string;
+    search: string;
+    categories: string[];
+    sort: SortOption;
+  }) {
     const id = ++requestId.current;
     setLoading(true);
     setError(null);
@@ -31,6 +38,7 @@ export default function ProductListPage() {
         cursor: opts.cursor,
         search: opts.search || undefined,
         categories: opts.categories.length ? opts.categories : undefined,
+        sort: opts.sort,
       });
       if (id !== requestId.current) return; // superseded by a newer request — drop it
       setItems((prev) => (opts.cursor ? [...prev, ...page.items] : page.items));
@@ -51,22 +59,22 @@ export default function ProductListPage() {
     listCategories()
       .then((c) => setAllCategories(c.categories))
       .catch(() => setAllCategories([]));
-    void fetchPage({ search: "", categories: [] });
+    void fetchPage({ search: "", categories: [], sort: "price_asc" });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Reset pagination and refetch page 1 for a given search + category set.
-  function applyFilters(search: string, categories: string[]) {
+  // Reset pagination and refetch page 1 for a given search + category set + sort.
+  function applyFilters(search: string, categories: string[], sortOpt: SortOption) {
     setItems([]);
     setCursor(null);
-    void fetchPage({ search, categories });
+    void fetchPage({ search, categories, sort: sortOpt });
   }
 
   function onSubmit(e: FormEvent) {
     e.preventDefault();
     const term = query.trim();
     setActiveSearch(term);
-    applyFilters(term, selected);
+    applyFilters(term, selected, sort);
   }
 
   function toggleCategory(cat: string) {
@@ -74,14 +82,19 @@ export default function ProductListPage() {
       ? selected.filter((c) => c !== cat)
       : [...selected, cat];
     setSelected(next);
-    applyFilters(activeSearch, next);
+    applyFilters(activeSearch, next, sort);
+  }
+
+  function onSortChange(next: SortOption) {
+    setSort(next);
+    applyFilters(activeSearch, selected, next);
   }
 
   function clearAll() {
     setQuery("");
     setActiveSearch("");
     setSelected([]);
-    applyFilters("", []);
+    applyFilters("", [], sort); // sort is a persistent control, not a filter — keep it
   }
 
   const hasFilters = activeSearch !== "" || selected.length > 0;
@@ -105,6 +118,18 @@ export default function ProductListPage() {
         <button type="submit" disabled={loading} style={{ padding: "0.5rem 1rem" }}>
           Search
         </button>
+        <label style={{ display: "inline-flex", gap: "0.35rem", alignItems: "center", marginLeft: "auto" }}>
+          Sort:
+          <select
+            value={sort}
+            onChange={(e) => onSortChange(e.target.value as SortOption)}
+            aria-label="Sort products"
+            style={{ padding: "0.5rem" }}
+          >
+            <option value="price_asc">Price: Low → High</option>
+            <option value="price_desc">Price: High → Low</option>
+          </select>
+        </label>
       </form>
 
       {/* Category facet */}
@@ -123,7 +148,7 @@ export default function ProductListPage() {
       {hasFilters && (
         <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center", margin: "0 0 1rem" }}>
           {activeSearch && (
-            <Chip label={`search: ${activeSearch}`} onRemove={() => { setQuery(""); setActiveSearch(""); applyFilters("", selected); }} />
+            <Chip label={`search: ${activeSearch}`} onRemove={() => { setQuery(""); setActiveSearch(""); applyFilters("", selected, sort); }} />
           )}
           {selected.map((cat) => (
             <Chip key={cat} label={cat} onRemove={() => toggleCategory(cat)} />
@@ -182,7 +207,7 @@ export default function ProductListPage() {
       {cursor && (
         <div style={{ textAlign: "center", marginTop: "1.5rem" }}>
           <button
-            onClick={() => cursor && void fetchPage({ cursor, search: activeSearch, categories: selected })}
+            onClick={() => cursor && void fetchPage({ cursor, search: activeSearch, categories: selected, sort })}
             disabled={loading}
             style={{ padding: "0.5rem 1.25rem" }}
           >
