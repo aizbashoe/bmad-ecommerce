@@ -6,6 +6,9 @@ services:
   dynamodb-local:
     image: amazon/dynamodb-local:latest
     container_name: bmad-ecommerce-dynamodb
+    # Run as root so the process can write the SQLite DB to the (root-owned) named
+    # volume; the image's default non-root user cannot, which crash-loops the DB.
+    user: root
     command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "/data"]
     working_dir: /home/dynamodblocal
     volumes:
