@@ -7,6 +7,33 @@ A record of every command run to set up and drive BMAD in this repo, so the proc
 - **Output folder:** `_bmad-output/` (`planning-artifacts/`, `implementation-artifacts/`)
 - **Shell:** Git Bash (POSIX). `uv` runs the Python helper scripts BMAD relies on.
 
+## Skills used per phase / task
+
+Which BMAD skill (Claude Code skill / menu code) drives each phase, and what it produced here:
+
+| Phase / task | Skill | Menu code | Output artifact |
+| --- | --- | --- | --- |
+| Setup | `bmad-method install` (npm CLI, not a skill) | — | `_bmad/`, `.claude/skills/`, `_bmad-output/` |
+| Menu / "what next" | `bmad-help` | `BH` | (guidance only) |
+| 1 · Product Brief | `bmad-product-brief` | `CB` | `planning-artifacts/briefs/…/brief.md` |
+| 2 · PRD | `bmad-prd` | `PRD` | `planning-artifacts/prds/…/prd.md` |
+| (2 · UX — skipped) | `bmad-ux` | `CU` | *(not run — POC; review later)* |
+| 3 · Architecture | `bmad-architecture` | `CA` | `planning-artifacts/architecture/…/ARCHITECTURE-SPINE.md` |
+| 3 · Epics & Stories | `bmad-create-epics-and-stories` | `CE` | `planning-artifacts/epics.md` |
+| 3 · Readiness check | `bmad-check-implementation-readiness` | `IR` | `planning-artifacts/implementation-readiness-report-*.md` |
+| 4 · Sprint Planning | `bmad-sprint-planning` | `SP` | `implementation-artifacts/sprint-status.yaml` |
+| 4 · Sprint Status | `bmad-sprint-status` | `SS` | (status summary) |
+| 4 · Create Story | `bmad-create-story` | `CS` | `implementation-artifacts/{story-key}.md` |
+| 4 · Validate Story | `bmad-create-story` (validate) | `VS` | story validation report |
+| 4 · Dev Story | `bmad-dev-story` | `DS` | code in `backend/`, `frontend/`, etc. |
+| 4 · Code Review | `bmad-code-review` | `CR` | review findings |
+| 4 · QA E2E tests | `bmad-qa-generate-e2e-tests` | `QA` | test suite |
+| 4 · Retrospective | `bmad-retrospective` | `ER` | retrospective notes |
+
+Each `### Phase …` section below records the exact commands run for that phase, in order.
+
+---
+
 > Config note: `output_folder` must be bound at install time. A `--yes` install *without* `--output-folder` leaves the placeholder `{output_folder}` unresolved and creates a literal `{output_folder}/` directory — pass `--output-folder` explicitly (see setup step 3) to avoid it.
 
 ---
@@ -84,7 +111,7 @@ uv run _bmad/scripts/memlog.py append --workspace "$WS" --type <decision|change|
 ### Phase 1 — Product Brief (skill: `bmad-product-brief`) — 2026-07-06
 
 ```bash
-WS="_bmad-output/planning-artifacts/briefs/brief-anon-storefront-2026-07-06"
+WS="_bmad-output/planning-artifacts/briefs/brief-bmad-ecommerce-2026-07-06"
 
 uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-product-brief --key workflow
 
@@ -104,14 +131,14 @@ uv run _bmad/scripts/memlog.py append --workspace "$WS" --type decision --text "
 uv run _bmad/scripts/memlog.py append --workspace "$WS" --type decision --text "Brief assumptions all resolved by user; brief ready to finalize."
 ```
 
-**Output:** `_bmad-output/planning-artifacts/briefs/brief-anon-storefront-2026-07-06/brief.md` (status: **complete**)
+**Output:** `_bmad-output/planning-artifacts/briefs/brief-bmad-ecommerce-2026-07-06/brief.md` (status: **complete**)
 
 ### Phase 2 — PRD (skill: `bmad-prd`) — 2026-07-06
 
 ```bash
 uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-prd --key workflow
 
-WS="_bmad-output/planning-artifacts/prds/prd-anon-storefront-2026-07-06"
+WS="_bmad-output/planning-artifacts/prds/prd-bmad-ecommerce-2026-07-06"
 mkdir -p "$WS"
 uv run _bmad/scripts/memlog.py init --workspace "$WS" --field topic="PRD: Anonymous e-commerce storefront (learning/POC)"
 
@@ -125,14 +152,14 @@ uv run _bmad/scripts/memlog.py append --workspace "$WS" --type decision --text "
 uv run _bmad/scripts/memlog.py append --workspace "$WS" --type event --text "PRD finalized"
 ```
 
-**Output:** `_bmad-output/planning-artifacts/prds/prd-anon-storefront-2026-07-06/prd.md` (status: **final**)
+**Output:** `_bmad-output/planning-artifacts/prds/prd-bmad-ecommerce-2026-07-06/prd.md` (status: **final**)
 
 ### Phase 3 — Architecture (skill: `bmad-architecture`) — 2026-07-06
 
 ```bash
 uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-architecture --key workflow
 
-WS="_bmad-output/planning-artifacts/architecture/architecture-anon-storefront-2026-07-06"
+WS="_bmad-output/planning-artifacts/architecture/architecture-bmad-ecommerce-2026-07-06"
 mkdir -p "$WS"
 uv run _bmad/scripts/memlog.py init --workspace "$WS" \
   --field scope="Anonymous e-commerce storefront (PLP/PDP/cart/guest checkout/order summary)" \
@@ -165,7 +192,7 @@ uv run .claude/skills/bmad-architecture/scripts/lint_spine.py --workspace "$WS"
 uv run _bmad/scripts/memlog.py append --workspace "$WS" --type event --text "spine finalized"
 ```
 
-**Output:** `_bmad-output/planning-artifacts/architecture/architecture-anon-storefront-2026-07-06/ARCHITECTURE-SPINE.md` (status: **final**)
+**Output:** `_bmad-output/planning-artifacts/architecture/architecture-bmad-ecommerce-2026-07-06/ARCHITECTURE-SPINE.md` (status: **final**)
 
 ### Phase 3b — Epics & Stories (skill: `bmad-create-epics-and-stories`) — 2026-07-06
 
@@ -222,7 +249,40 @@ git remote add origin https://github.com/aizbashoe/bmad-ecommerce.git
 git push -u origin main   # Git Credential Manager handled auth (no token needed)
 ```
 
-**Commit policy (agreed):** one commit per completed story; Claude proposes each commit
-and waits for user approval before running it. Conventional-commit messages.
+**Commit policy (agreed):** **fine-grained commits — roughly one per FR or logical part,
+NOT one big commit per story** (scaffold stories split by logical piece). Claude proposes
+each commit and waits for user approval before running it. Conventional-commit messages.
+Tracked: app code + `README.md`/`BMAD.md`; `_bmad/`, `.claude/`, `_bmad-output/` gitignored.
 
-<!-- Append future phases (Story cycle: create-story -> dev-story -> code-review) below as they run. -->
+### Phase 4 — Story cycle
+
+#### Story 1.1 — create-story (skill: `bmad-create-story`) — 2026-07-06
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-create-story --key workflow
+# authored the story file; then updated sprint-status.yaml (epic-1 -> in-progress, 1-1 -> ready-for-dev)
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-create-story --key workflow.on_complete
+```
+
+**Output:** `_bmad-output/implementation-artifacts/1-1-project-scaffold-and-local-runtime.md` (status: **ready-for-dev**)
+Covers walking skeleton: hexagonal FastAPI scaffold + React/Vite frontend + docker-compose with amazon/dynamodb-local; 7 ACs, 5 tasks.
+
+#### Story 1.1 — dev-story (skill: `bmad-dev-story`) — 2026-07-06
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-dev-story --key workflow
+git rev-parse HEAD    # baseline_commit bc299c4 stamped into story frontmatter
+# ... wrote backend/ (FastAPI hexagonal scaffold), frontend/ (React 19/Vite 8), docker-compose.yml, .env.example
+
+# Backend verification (Python 3.13 venv):
+cd backend && uv venv --python 3.13 .venv && uv pip install --python .venv -e ".[dev]"
+.venv/Scripts/python -m pytest -q          # -> 7 passed
+# Frontend verification:
+cd frontend && npm install && npm run build # -> tsc + vite 8.1.3 build OK
+```
+
+**Output:** working walking skeleton. Backend 7/7 tests pass; frontend builds.
+**Status:** story kept **in-progress** — code complete, but Task 4 (live `docker compose up`)
+is BLOCKED (Docker daemon not running in this environment); live end-to-end is a manual step.
+
+<!-- Next: run `docker compose up` to finish AC verification, then bmad-code-review, then commit per-part. -->
