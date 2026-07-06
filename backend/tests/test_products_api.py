@@ -12,26 +12,30 @@ client = TestClient(app)
 
 
 class _FakeRepo:
-    def list_products(self, limit, cursor, search=None):
+    def list_products(self, limit, cursor, search=None, categories=None):
         if cursor == "BAD":
             raise AppError("Invalid pagination cursor", code="invalid_cursor", status_code=400)
         from app.models.product import Product
 
-        # When searching, echo the term into the name so tests can assert passthrough.
+        # Echo the filters into the response so tests can assert passthrough.
         label = f"Match {search}" if search else "Item"
+        category = (categories[0] if categories else "home")
         items = [
             Product(
                 product_id=f"p-{i}",
                 name=f"{label} {i}",
                 description="d",
                 price=1000 + i,
-                category="home",
+                category=category,
                 image_url=f"https://img/{i}",
                 available=True,
             )
             for i in range(limit)
         ]
         return items, ("NEXT" if cursor is None else None)
+
+    def list_categories(self):
+        return ["books", "home", "toys"]
 
 
 @pytest.fixture(autouse=True)
@@ -84,3 +88,23 @@ def test_search_too_long_422_envelope():
     resp = client.get(f"/products?search={'x' * 101}")
     assert resp.status_code == 422
     assert resp.json()["error"]["code"] == "validation_error"
+
+
+def test_single_category_passthrough():
+    resp = client.get("/products?category=books&limit=2")
+    assert resp.status_code == 200
+    assert all(i["category"] == "books" for i in resp.json()["items"])
+
+
+def test_multi_category_and_search_passthrough():
+    resp = client.get("/products?category=home&category=books&search=mug&limit=1")
+    assert resp.status_code == 200
+    item = resp.json()["items"][0]
+    assert item["category"] == "home"  # fake echoes first category
+    assert item["name"].startswith("Match mug")
+
+
+def test_categories_endpoint_shape():
+    resp = client.get("/products/categories")
+    assert resp.status_code == 200
+    assert resp.json() == {"categories": ["books", "home", "toys"]}
