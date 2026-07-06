@@ -177,8 +177,9 @@ class ProductsRepository:
         cursor: str | None = None,
         search: str | None = None,
         categories: list[str] | None = None,
+        sort: str = "price_asc",
     ) -> tuple[list[Product], str | None]:
-        """Page the catalog, price ascending (AD-4, FR-1/FR-2/FR-3).
+        """Page the catalog with optional search/category filter and price sort (AD-4, FR-1..4).
 
         Query strategy (AD-4):
         - single category, no search -> `gsi_category` Query (native partition + price sort +
@@ -198,16 +199,18 @@ class ProductsRepository:
             raise AppError(
                 "Too many category filters (max 100)", code="too_many_categories", status_code=400
             )
+        forward = _sort_ascending(sort)  # price_asc -> True, price_desc -> False (FR-4)
+        fingerprint = _query_fingerprint(sort, term, cats)  # binds the cursor to this query
 
         # AD-4 fast path: exactly one category and no search.
         if len(cats) == 1 and not term:
-            return self._query_category_index(cats[0], limit, cursor)
+            return self._query_category_index(cats[0], limit, cursor, forward, fingerprint)
 
         base_kwargs = {
             "TableName": self._table,
             "IndexName": GSI_LISTING,
             "KeyConditionExpression": "listingPk = :pk",
-            "ScanIndexForward": True,  # price ascending
+            "ScanIndexForward": forward,  # price ascending (price_asc) / descending (price_desc)
         }
         expr_values: dict = {":pk": {"S": LISTING_PK_VALUE}}
         # Composable filter clauses (search from 1.4, category from 1.5).
@@ -226,7 +229,7 @@ class ProductsRepository:
         if filter_clauses:
             base_kwargs["FilterExpression"] = " AND ".join(filter_clauses)
 
-        start_key = _decode_cursor(cursor, expected_keys=_LISTING_CURSOR_KEYS)
+        start_key = _decode_cursor(cursor, expected_keys=_LISTING_CURSOR_KEYS, fingerprint=fingerprint)
 
         # Per underlying query, scan at least `limit` items (more when filtering, to reduce
         # round-trips). Cap loop iterations as a safety net against pathological sparsity.
@@ -255,20 +258,20 @@ class ProductsRepository:
                 break
             start_key = next_key
 
-        return collected, _encode_cursor(next_key)
+        return collected, _encode_cursor(next_key, fingerprint)
 
     def _query_category_index(
-        self, category: str, limit: int, cursor: str | None
+        self, category: str, limit: int, cursor: str | None, forward: bool, fingerprint: str
     ) -> tuple[list[Product], str | None]:
         """AD-4 fast path: single category via gsi_category (PK=category, SK=price)."""
-        start_key = _decode_cursor(cursor, expected_keys=_CATEGORY_CURSOR_KEYS)
+        start_key = _decode_cursor(cursor, expected_keys=_CATEGORY_CURSOR_KEYS, fingerprint=fingerprint)
         kwargs = {
             "TableName": self._table,
             "IndexName": GSI_CATEGORY,
             "KeyConditionExpression": "category = :c",
             "ExpressionAttributeValues": {":c": {"S": category}},
             "Limit": limit,
-            "ScanIndexForward": True,  # price ascending
+            "ScanIndexForward": forward,  # price ascending / descending (FR-4)
         }
         if start_key:
             kwargs["ExclusiveStartKey"] = start_key
@@ -282,7 +285,7 @@ class ProductsRepository:
                 ) from exc
             raise
         products = [self._from_item(item) for item in resp.get("Items", [])]
-        return products, _encode_cursor(resp.get("LastEvaluatedKey"))
+        return products, _encode_cursor(resp.get("LastEvaluatedKey"), fingerprint)
 
     def list_categories(self) -> list[str]:
         """Distinct, sorted category list for the facet UI.
@@ -334,36 +337,62 @@ def _chunks(seq, size):
         yield seq[i : i + size]
 
 
-def _encode_cursor(last_evaluated_key: dict | None) -> str | None:
-    """Encode a DynamoDB LastEvaluatedKey as an opaque urlsafe-base64 token (AD-4)."""
+def _sort_ascending(sort: str) -> bool:
+    """Map a sort option to ScanIndexForward. Unknown -> 400 (API also rejects via enum)."""
+    if sort == "price_asc":
+        return True
+    if sort == "price_desc":
+        return False
+    raise AppError(f"Invalid sort '{sort}'", code="invalid_sort", status_code=400)
+
+
+def _query_fingerprint(sort: str, term: str, cats: list[str]) -> str:
+    """Stable identity of a listing query (sort + search + categories).
+
+    Embedded in the cursor so a token can only be replayed against the SAME query — a
+    cursor minted under one sort/filter replayed under another is rejected (invalid_cursor)
+    instead of silently paginating the wrong result set (dup/gap). This binds sort, search,
+    and category — the pagination position is only meaningful for the query that produced it.
+    """
+    return f"{sort}|{term}|{','.join(sorted(cats))}"
+
+
+def _encode_cursor(last_evaluated_key: dict | None, fingerprint: str) -> str | None:
+    """Encode a LastEvaluatedKey + its query fingerprint as an opaque urlsafe-base64 token."""
     if not last_evaluated_key:
         return None
-    raw = json.dumps(last_evaluated_key, separators=(",", ":")).encode()
-    return base64.urlsafe_b64encode(raw).decode()
+    payload = {"k": last_evaluated_key, "f": fingerprint}
+    return base64.urlsafe_b64encode(json.dumps(payload, separators=(",", ":")).encode()).decode()
 
 
-def _decode_cursor(cursor: str | None, expected_keys: frozenset[str] | None = None) -> dict | None:
-    """Decode an opaque cursor back to an ExclusiveStartKey; bad input -> 400 invalid_cursor.
+def _decode_cursor(
+    cursor: str | None, expected_keys: frozenset[str] | None = None, fingerprint: str = ""
+) -> dict | None:
+    """Decode an opaque cursor to an ExclusiveStartKey; bad/mismatched input -> 400 invalid_cursor.
 
-    Rejects (as invalid_cursor) anything that isn't base64-of-JSON-object, and — when
-    ``expected_keys`` is given — anything whose keys aren't a subset of that set or whose
-    values aren't single-type-tag attribute maps. This stops a crafted-but-decodable cursor
-    from reaching DynamoDB and surfacing as a 500.
+    Rejects (as invalid_cursor): anything that isn't base64-of-the-expected-envelope; a token
+    whose embedded fingerprint doesn't match the current query's (sort/search/category changed);
+    and — when ``expected_keys`` is given — a key whose attributes aren't a subset of that set.
     """
     if not cursor:
         return None
     try:
         data = json.loads(base64.urlsafe_b64decode(cursor.encode()))
-        if not isinstance(data, dict) or not data:
-            raise ValueError("cursor is not a key object")
+        if not isinstance(data, dict) or "k" not in data or "f" not in data:
+            raise ValueError("cursor envelope is malformed")
+        if data["f"] != fingerprint:
+            raise ValueError("cursor does not match this query (sort/filter changed)")
+        key = data["k"]
+        if not isinstance(key, dict) or not key:
+            raise ValueError("cursor key is missing")
         if expected_keys is not None:
-            if not set(data).issubset(expected_keys):
+            if not set(key).issubset(expected_keys):
                 raise ValueError("cursor keys do not match this query")
-            for v in data.values():
+            for v in key.values():
                 if not isinstance(v, dict) or len(v) != 1:
                     raise ValueError("cursor value is not a DynamoDB attribute")
-        return data
+        return key
     except AppError:
         raise
-    except Exception as exc:  # noqa: BLE001 - any malformed cursor is a client error
+    except Exception as exc:  # noqa: BLE001 - any malformed/mismatched cursor is a client error
         raise AppError("Invalid pagination cursor", code="invalid_cursor", status_code=400) from exc

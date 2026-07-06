@@ -6,7 +6,7 @@ No business logic and no boto3 here — delegates to CatalogService. FastAPI val
 
 from fastapi import APIRouter, Depends, Query
 
-from app.models.catalog import CategoryList, ProductPage
+from app.models.catalog import CategoryList, ProductPage, SortOption
 from app.services.catalog import CatalogService
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -37,6 +37,9 @@ def list_products(
     category: list[str] | None = Query(
         default=None, description="Filter by category; repeat for multiple (OR)."
     ),
+    sort: SortOption = Query(default=SortOption.price_asc, description="Sort order (price)."),
     service: CatalogService = Depends(get_catalog_service),
 ) -> ProductPage:
-    return service.list_products(limit=limit, cursor=cursor, search=search, categories=category)
+    return service.list_products(
+        limit=limit, cursor=cursor, search=search, categories=category, sort=sort.value
+    )

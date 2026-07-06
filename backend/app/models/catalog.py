@@ -1,7 +1,16 @@
 """Catalog API response models (AD-5: camelCase on the wire via CamelModel)."""
 
+from enum import Enum
+
 from app.models import CamelModel
 from app.models.product import Product
+
+
+class SortOption(str, Enum):
+    """PLP sort order (FR-4). Both GSIs are price-keyed, so sort is a ScanIndexForward flip."""
+
+    price_asc = "price_asc"
+    price_desc = "price_desc"
 
 
 class ProductSummary(CamelModel):

@@ -18,9 +18,10 @@ class CatalogService:
         cursor: str | None = None,
         search: str | None = None,
         categories: list[str] | None = None,
+        sort: str = "price_asc",
     ) -> ProductPage:
         products, next_cursor = self._repo.list_products(
-            limit=limit, cursor=cursor, search=search, categories=categories
+            limit=limit, cursor=cursor, search=search, categories=categories, sort=sort
         )
         return ProductPage(
             items=[ProductSummary.from_product(p) for p in products],
