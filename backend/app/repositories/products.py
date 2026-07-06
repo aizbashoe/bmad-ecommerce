@@ -10,16 +10,23 @@ Key design (AD-4), which the PLP stories (1.3–1.6) query:
 Both GSIs project ALL. Money is an integer minor-unit (cents) Number (AD-6).
 """
 
+import base64
+import json
 import time
 
 from botocore.exceptions import ClientError
 
+from app.core.errors import AppError
 from app.models.product import Product
 from app.repositories import dynamodb
 
 GSI_CATEGORY = "gsi_category"
 GSI_LISTING = "gsi_listing"
 LISTING_PK_VALUE = "PRODUCT"  # constant partition for the unfiltered listing GSI
+
+# A gsi_listing LastEvaluatedKey carries the GSI keys + base-table key. A decoded cursor
+# whose keys aren't a subset of these is not one we minted -> reject as invalid_cursor.
+_LISTING_CURSOR_KEYS = frozenset({"listingPk", "price", "productId"})
 
 
 class ProductsRepository:
@@ -158,6 +165,37 @@ class ProductsRepository:
 
     # ---- reads (minimal; PLP query methods arrive in stories 1.3–1.6) -----
 
+    def list_products(
+        self, limit: int = 24, cursor: str | None = None
+    ) -> tuple[list[Product], str | None]:
+        """Page the full catalog via gsi_listing, price ascending (AD-4, FR-1).
+
+        Returns (products, next_cursor). `next_cursor` is an opaque base64 token or None
+        on the last page — the raw LastEvaluatedKey is never exposed.
+        """
+        kwargs = {
+            "TableName": self._table,
+            "IndexName": GSI_LISTING,
+            "KeyConditionExpression": "listingPk = :pk",
+            "ExpressionAttributeValues": {":pk": {"S": LISTING_PK_VALUE}},
+            "Limit": limit,
+            "ScanIndexForward": True,  # price ascending
+        }
+        start_key = _decode_cursor(cursor, expected_keys=_LISTING_CURSOR_KEYS)
+        if start_key:
+            kwargs["ExclusiveStartKey"] = start_key
+        try:
+            resp = self._client.query(**kwargs)
+        except ClientError as exc:
+            # A structurally-valid but semantically-bad ExclusiveStartKey (wrong types,
+            # a key from a different query) is a client error, not a server fault.
+            code = exc.response.get("Error", {}).get("Code")
+            if start_key and code == "ValidationException":
+                raise AppError("Invalid pagination cursor", code="invalid_cursor", status_code=400) from exc
+            raise
+        products = [self._from_item(item) for item in resp.get("Items", [])]
+        return products, _encode_cursor(resp.get("LastEvaluatedKey"))
+
     def get_product(self, product_id: str) -> Product | None:
         resp = self._client.get_item(
             TableName=self._table, Key={"productId": {"S": product_id}}
@@ -182,3 +220,38 @@ class ProductsRepository:
 def _chunks(seq, size):
     for i in range(0, len(seq), size):
         yield seq[i : i + size]
+
+
+def _encode_cursor(last_evaluated_key: dict | None) -> str | None:
+    """Encode a DynamoDB LastEvaluatedKey as an opaque urlsafe-base64 token (AD-4)."""
+    if not last_evaluated_key:
+        return None
+    raw = json.dumps(last_evaluated_key, separators=(",", ":")).encode()
+    return base64.urlsafe_b64encode(raw).decode()
+
+
+def _decode_cursor(cursor: str | None, expected_keys: frozenset[str] | None = None) -> dict | None:
+    """Decode an opaque cursor back to an ExclusiveStartKey; bad input -> 400 invalid_cursor.
+
+    Rejects (as invalid_cursor) anything that isn't base64-of-JSON-object, and — when
+    ``expected_keys`` is given — anything whose keys aren't a subset of that set or whose
+    values aren't single-type-tag attribute maps. This stops a crafted-but-decodable cursor
+    from reaching DynamoDB and surfacing as a 500.
+    """
+    if not cursor:
+        return None
+    try:
+        data = json.loads(base64.urlsafe_b64decode(cursor.encode()))
+        if not isinstance(data, dict) or not data:
+            raise ValueError("cursor is not a key object")
+        if expected_keys is not None:
+            if not set(data).issubset(expected_keys):
+                raise ValueError("cursor keys do not match this query")
+            for v in data.values():
+                if not isinstance(v, dict) or len(v) != 1:
+                    raise ValueError("cursor value is not a DynamoDB attribute")
+        return data
+    except AppError:
+        raise
+    except Exception as exc:  # noqa: BLE001 - any malformed cursor is a client error
+        raise AppError("Invalid pagination cursor", code="invalid_cursor", status_code=400) from exc
