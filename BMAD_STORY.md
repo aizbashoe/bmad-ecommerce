@@ -207,4 +207,81 @@ Run bmad-sprint-status
 
 ---
 
+## 8. No planning? Implementing something new ad-hoc
+
+Sometimes work arrives that **isn't in `epics.md`** and has no PRD/architecture entry — a bug fix,
+a tweak, or a brand-new small feature. You do **not** have to run the whole Phase 1–3 chain. Pick
+the path by size, and — critically — **still obey the architecture spine and still review + commit.**
+
+### Decision guide (by scope)
+
+| The new work is… | Use | Why |
+|------------------|-----|-----|
+| A small, self-contained change / fix / tweak (hours) | **`bmad-quick-dev` (QQ)** | One unified flow: clarify → plan → implement → review → present. No story ceremony. |
+| A real feature you want tracked as a story (a day-ish) | **Ad-hoc story** (§8.2 below) | Keeps it in the sprint tracker + gets the normal dev-story → code-review cycle. |
+| Something whose *shape* is unclear, or spans several stories | **`bmad-spec` (SP)** first | Locks the WHAT into a `SPEC.md` before any code; can then hand off to quick-dev or a story. |
+| A change that **contradicts existing plan** (PRD/architecture/epics) | **`bmad-correct-course` (CC)** | Reconciles the change with prior decisions; may recommend revising PRD/architecture/epics. |
+| A large feature that deserves full rigor | Loop back to **`bmad-prd` → `bmad-architecture` → `bmad-create-epics-and-stories`** | For anything big, planning still pays off. |
+
+> **Always true, planning or not:** the [ARCHITECTURE-SPINE.md](../_bmad-output/planning-artifacts/architecture/architecture-bmad-ecommerce-2026-07-06/ARCHITECTURE-SPINE.md) ADs still bind (layering, camelCase, integer cents, boto3-only-in-repositories…), tests still run, and code still goes through `bmad-code-review` + a fine-grained commit.
+
+### 8.1 Fastest path — `bmad-quick-dev` (QQ)
+
+For an isolated intent, one skill takes it end to end (intent in → clarify → plan → implement →
+self-review → present), producing code that follows the existing patterns.
+
+```
+Run bmad-quick-dev
+> Add a /health/version endpoint that returns the app version from pyproject.
+```
+
+- **Reads:** your intent + the existing code + `project-context.md` if present.
+- **Writes:** the code + a lightweight spec; no epic/story file, no sprint-status entry.
+- **Then:** run tests (`pytest` / `npm run build`), optionally `bmad-code-review`, and commit.
+- Best when it's too small to justify a story. If it grows, promote it to §8.2.
+
+### 8.2 Tracked ad-hoc story (no epic needed)
+
+When you want the new feature to run through the normal, reviewable cycle but it isn't in
+`epics.md`, create the story explicitly instead of "next from the plan":
+
+```
+Run bmad-create-story for a new story "2-1 guest-cart-badge"
+```
+
+- `bmad-create-story` accepts an **explicit epic/story id** — it doesn't require the story to
+  pre-exist in `epics.md`. It still pulls context from the PRD/architecture/prior stories that
+  *do* exist, and writes the usual context-rich story file.
+- Add the key to `sprint-status.yaml` (or re-run `bmad-sprint-planning` if you also add it to
+  `epics.md`) so the tracker knows about it.
+- From there it's the **normal cycle**: `bmad-dev-story` → tests → `bmad-code-review` → commit
+  (§§2–5). Status flows `ready-for-dev → in-progress → review → done` as usual.
+
+**Hand-authored fallback:** you can also just write a story file yourself at
+`_bmad-output/implementation-artifacts/<key>.md` (Story / Acceptance Criteria / Tasks / Dev Notes)
+and point `bmad-dev-story` at it: *"Run bmad-dev-story for `<path>`"*. dev-story works from any
+story file, in or out of the sprint plan.
+
+### 8.3 Unclear or cross-cutting — spec it first
+
+If you can't yet write crisp acceptance criteria, distill the intent first:
+
+```
+Run bmad-spec
+> <brain-dump / ticket / transcript of the new requirement>
+```
+
+`bmad-spec` produces a `SPEC.md` (the WHAT), which you then feed into `bmad-quick-dev` or an
+ad-hoc story. For a change that **conflicts** with what's already planned, use
+`bmad-correct-course` instead — it surfaces the conflict and proposes how to adjust the plan.
+
+### Rule of thumb
+
+Smaller = less ceremony. Quick-dev for a slice, an ad-hoc story for a tracked feature, spec/PRD
+for anything whose shape or scope is fuzzy. Whatever the path, the **architecture spine, review,
+and commit discipline never get skipped** — that's what keeps ad-hoc work consistent with the
+planned codebase.
+
+---
+
 *Skills are invoked by name in Claude Code (they're installed under `.claude/skills/`). The model reads the story file + architecture spine as context and writes the code — you review and approve. Each phase's exact commands for THIS project are logged in [BMAD.md](BMAD.md).*

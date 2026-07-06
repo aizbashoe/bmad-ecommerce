@@ -306,3 +306,16 @@ uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-create
 Provisions Products table + gsi_category/gsi_listing (AD-4) via ProductsRepository; idempotent seed of ~100-500 synthetic products (FR-16); moto-based tests.
 
 <!-- Next: bmad-dev-story for 1.2, then bmad-code-review, then commit per-part. -->
+
+### Document Project (skill: `bmad-document-project`) — 2026-07-06
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-document-project --key workflow
+# initial_scan, deep scan level; classified monorepo (backend + frontend)
+```
+
+**Output (in `docs/`):** index.md, project-overview.md, source-tree-analysis.md,
+architecture-backend.md, architecture-frontend.md, api-contracts-backend.md,
+data-models-backend.md, development-guide.md, deployment-guide.md,
+integration-architecture.md, project-parts.json, project-scan-report.json.
+Brownfield code documentation (as-built) — complements the planning artifacts.
