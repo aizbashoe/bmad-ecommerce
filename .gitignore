@@ -1,7 +1,7 @@
-# ── BMAD engine & generated artifacts (not tracked; re-created via `npx bmad-method install`) ──
+# ── BMAD engine (not tracked; re-created via `npx bmad-method install`) ──
 _bmad/
 .claude/
-_bmad-output/
+# NOTE: _bmad-output/ (planning + implementation artifacts) IS tracked — see repo history.
 
 # ── Python (backend) ──
 __pycache__/

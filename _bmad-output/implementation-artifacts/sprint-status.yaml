@@ -1,0 +1,81 @@
+# generated: 2026-07-06
+# last_updated: 2026-07-06
+# project: Anonymous E-Commerce Storefront
+# project_key: NOKEY
+# tracking_system: file-system
+# story_location: _bmad-output/implementation-artifacts
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic not yet started
+#   - in-progress: Epic actively being worked on
+#   - done: All stories in epic completed
+#
+# Epic Status Transitions:
+#   - backlog → in-progress: Automatically when first story is created (via create-story)
+#   - in-progress → done: Manually when all stories reach 'done' status
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - ready-for-dev: Story file created in stories folder
+#   - in-progress: Developer actively working on implementation
+#   - review: Ready for code review (via Dev's code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - done: Retrospective has been completed
+#
+# Action Item Status:
+#   - open: Committed during a retrospective, not yet addressed
+#   - in-progress: Actively being worked on
+#   - done: Completed
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epic transitions to 'in-progress' automatically when first story is created
+# - Stories can be worked in parallel if team capacity allows
+# - Developer typically creates next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', then runs code-review (fresh context, different LLM recommended)
+# - Retrospective appends its action items to action_items; sprint-status surfaces open ones
+
+generated: 2026-07-06
+last_updated: 2026-07-06  # story 1.1 created; epic-1 in-progress
+project: Anonymous E-Commerce Storefront
+project_key: NOKEY
+tracking_system: file-system
+story_location: _bmad-output/implementation-artifacts
+
+development_status:
+  # Epic 1: Browse & Discover the Catalog (Foundation + PLP)
+  epic-1: in-progress
+  1-1-project-scaffold-and-local-runtime: done
+  1-2-provision-products-table-and-seed-catalog: done
+  1-3-browse-catalog-with-pagination: done
+  1-4-search-products-by-keyword: backlog
+  1-5-filter-by-category-facet: backlog
+  1-6-sort-results: backlog
+  epic-1-retrospective: optional
+
+  # Epic 2: Inspect a Product (PDP)
+  epic-2: backlog
+  2-1-view-product-detail: backlog
+  epic-2-retrospective: optional
+
+  # Epic 3: Shopping Cart
+  epic-3: backlog
+  3-1-establish-anonymous-guest-session: backlog
+  3-2-add-product-to-cart-from-pdp: backlog
+  3-3-view-cart-with-totals: backlog
+  3-4-update-line-item-quantity: backlog
+  3-5-remove-line-item: backlog
+  epic-3-retrospective: optional
+
+  # Epic 4: Guest Checkout & Order
+  epic-4: backlog
+  4-1-enter-shipping-details: backlog
+  4-2-complete-simulated-payment: backlog
+  4-3-place-order: backlog
+  4-4-view-order-summary: backlog
+  epic-4-retrospective: optional
