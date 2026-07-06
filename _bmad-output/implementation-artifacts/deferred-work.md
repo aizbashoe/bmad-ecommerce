@@ -1,5 +1,11 @@
 # Deferred Work
 
+## Deferred from: code review of story 1-4-search-products-by-keyword (2026-07-06)
+
+- **Cursor not bound to the search term** [backend `_encode_cursor`/`list_products`] — a cursor minted under `search=A` is structurally valid under `search=B` (encodes only the gsi_listing position). Practical trigger is removed by the frontend request-sequencing fix (cursor is always paired with the active term), but for robustness embed the filter (or a hash) in the opaque cursor and reject a mismatch.
+- **Frontend discards the error envelope** [frontend/src/api/client.ts] — 400 `invalid_cursor` shows as a generic error and the bad cursor isn't reset. (Same as the Story 1.3 deferral.) Parse `{error:{code,message}}` and reset the cursor on `invalid_cursor`.
+- **Search is substring, not token, and not Unicode-normalized** [backend searchText/contains] — `contains` matches contiguous substrings ("tee" ⊂ "canteen"; "red shirt" misses reordered text) and does no NFC/NFKC folding. Acceptable at POC scale; revisit with tokenization or a search engine (the AD-4 OpenSearch path) if search quality matters.
+
 ## Deferred from: code review of story 1-3-browse-catalog-with-pagination (2026-07-06)
 
 - **`Limit` + `FilterExpression` under-fills pages** [backend/app/repositories/products.py] — DynamoDB applies `Limit` before a `FilterExpression`, so once Stories 1.4 (search) / 1.5 (category facet) add filters, a page can return fewer than `limit` matches (or zero) while more exist. Those stories must loop-to-fill (keep querying with the cursor until `limit` matches are accumulated) or filter above the repo. **Action for 1.4/1.5.**

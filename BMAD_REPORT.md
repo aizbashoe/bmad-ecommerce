@@ -34,7 +34,7 @@ engine + `.claude/` skills are gitignored (re-installable via `npx bmad-method i
 | 15 | Story 1.3 — review | `bmad-code-review` (CR) | `### Review Findings` in 1-3 story; `deferred-work.md` (loop-to-fill note) |
 | 16 | Story 1.4 — create | `bmad-create-story` (CS) | `_bmad-output/implementation-artifacts/1-4-search-products-by-keyword.md` |
 | 17 | Story 1.4 — dev | `bmad-dev-story` (DS) | `backend/app/repositories/products.py` (search + loop-to-fill), `backend/tests/test_products_search.py`, `frontend/src/pages/ProductListPage.tsx` (search UI) |
-| 18 | Story 1.4 — review | `bmad-code-review` (CR) | *(pending)* |
+| 18 | Story 1.4 — review | `bmad-code-review` (CR) | `### Review Findings` in 1-4 story; `deferred-work.md` (2 patches applied, 3 deferred) |
 
 ## Supporting steps
 
@@ -74,7 +74,8 @@ engine + `.claude/` skills are gitignored (re-installable via `npx bmad-method i
 | `deb92f5` | docs: expand BMAD runbooks (diagram skill reference, story ad-hoc path) |
 | `29406fe` | chore: track BMAD artifacts (_bmad-output/) |
 | `170eade` | docs: update tracking policy — _bmad-output/ version-controlled |
-| *(pending)* | Story 1.4 search commits |
+| `3614770` | docs: BMAD execution report |
+| *(1.4)* | feat/test(backend) + feat(frontend): keyword search with loop-to-fill (FR-2) |
 
 ## Status snapshot (Epic 1)
 
@@ -83,7 +84,7 @@ engine + `.claude/` skills are gitignored (re-installable via `npx bmad-method i
 | 1-1 project scaffold + local runtime | ✅ done |
 | 1-2 provision Products table + seed | ✅ done |
 | 1-3 browse catalog with pagination | ✅ done |
-| 1-4 search products by keyword | 🔵 review |
+| 1-4 search products by keyword | ✅ done |
 | 1-5 filter by category facet | ⬜ backlog |
 | 1-6 sort results | ⬜ backlog |
 
