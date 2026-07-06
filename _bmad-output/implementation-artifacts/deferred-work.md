@@ -10,7 +10,7 @@
 
 ## Deferred from: code review of story 1-4-search-products-by-keyword (2026-07-06)
 
-- **Cursor not bound to the search term** [backend `_encode_cursor`/`list_products`] — a cursor minted under `search=A` is structurally valid under `search=B` (encodes only the gsi_listing position). Practical trigger is removed by the frontend request-sequencing fix (cursor is always paired with the active term), but for robustness embed the filter (or a hash) in the opaque cursor and reject a mismatch.
+- **~~Cursor not bound to the search term~~ — RESOLVED in Story 1.6** — the cursor now embeds a query fingerprint (sort + search + categories); a mismatched replay → `invalid_cursor` 400. This closes the search (1.4) and category (1.5) "cursor not bound" items too.
 - **Frontend discards the error envelope** [frontend/src/api/client.ts] — 400 `invalid_cursor` shows as a generic error and the bad cursor isn't reset. (Same as the Story 1.3 deferral.) Parse `{error:{code,message}}` and reset the cursor on `invalid_cursor`.
 - **Search is substring, not token, and not Unicode-normalized** [backend searchText/contains] — `contains` matches contiguous substrings ("tee" ⊂ "canteen"; "red shirt" misses reordered text) and does no NFC/NFKC folding. Acceptable at POC scale; revisit with tokenization or a search engine (the AD-4 OpenSearch path) if search quality matters.
 
