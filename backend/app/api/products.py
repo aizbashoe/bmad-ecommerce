@@ -23,6 +23,9 @@ def list_products(
     cursor: str | None = Query(
         default=None, max_length=2048, description="Opaque cursor from a previous page."
     ),
+    search: str | None = Query(
+        default=None, max_length=100, description="Case-insensitive keyword (name/description)."
+    ),
     service: CatalogService = Depends(get_catalog_service),
 ) -> ProductPage:
-    return service.list_products(limit=limit, cursor=cursor)
+    return service.list_products(limit=limit, cursor=cursor, search=search)

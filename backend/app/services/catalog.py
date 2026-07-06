@@ -12,8 +12,12 @@ class CatalogService:
     def __init__(self, repository: ProductsRepository | None = None):
         self._repo = repository or ProductsRepository()
 
-    def list_products(self, limit: int = 24, cursor: str | None = None) -> ProductPage:
-        products, next_cursor = self._repo.list_products(limit=limit, cursor=cursor)
+    def list_products(
+        self, limit: int = 24, cursor: str | None = None, search: str | None = None
+    ) -> ProductPage:
+        products, next_cursor = self._repo.list_products(
+            limit=limit, cursor=cursor, search=search
+        )
         return ProductPage(
             items=[ProductSummary.from_product(p) for p in products],
             next_cursor=next_cursor,

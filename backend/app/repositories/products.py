@@ -122,6 +122,9 @@ class ProductsRepository:
             "imageUrl": {"S": p.image_url},
             "available": {"BOOL": p.available},
             "listingPk": {"S": LISTING_PK_VALUE},
+            # Lowercased name+description for case-insensitive `contains` search (FR-2).
+            # DynamoDB expressions have no lower(), so we precompute it on write.
+            "searchText": {"S": f"{p.name} {p.description}".lower()},
         }
 
     @staticmethod
@@ -166,35 +169,64 @@ class ProductsRepository:
     # ---- reads (minimal; PLP query methods arrive in stories 1.3–1.6) -----
 
     def list_products(
-        self, limit: int = 24, cursor: str | None = None
+        self, limit: int = 24, cursor: str | None = None, search: str | None = None
     ) -> tuple[list[Product], str | None]:
-        """Page the full catalog via gsi_listing, price ascending (AD-4, FR-1).
+        """Page the catalog via gsi_listing, price ascending (AD-4, FR-1/FR-2).
 
-        Returns (products, next_cursor). `next_cursor` is an opaque base64 token or None
-        on the last page — the raw LastEvaluatedKey is never exposed.
+        Without `search`: a single Query page. With `search`: a case-insensitive substring
+        FilterExpression on `searchText`, plus **loop-to-fill** — DynamoDB applies `Limit`
+        before the filter, so we follow LastEvaluatedKey and accumulate matches until we
+        have >= `limit` of them (or the index is exhausted). Returns (products, next_cursor);
+        next_cursor is an opaque base64 token or None on the last page (raw key never exposed).
         """
-        kwargs = {
+        term = (search or "").strip().lower()
+        base_kwargs = {
             "TableName": self._table,
             "IndexName": GSI_LISTING,
             "KeyConditionExpression": "listingPk = :pk",
-            "ExpressionAttributeValues": {":pk": {"S": LISTING_PK_VALUE}},
-            "Limit": limit,
             "ScanIndexForward": True,  # price ascending
         }
+        expr_values: dict = {":pk": {"S": LISTING_PK_VALUE}}
+        # Optional filters are composed here so later stories (1.5 category facet) can add
+        # more clauses without a rewrite.
+        filter_clauses: list[str] = []
+        if term:
+            filter_clauses.append("contains(searchText, :q)")
+            expr_values[":q"] = {"S": term}
+        base_kwargs["ExpressionAttributeValues"] = expr_values
+        if filter_clauses:
+            base_kwargs["FilterExpression"] = " AND ".join(filter_clauses)
+
         start_key = _decode_cursor(cursor, expected_keys=_LISTING_CURSOR_KEYS)
-        if start_key:
-            kwargs["ExclusiveStartKey"] = start_key
-        try:
-            resp = self._client.query(**kwargs)
-        except ClientError as exc:
-            # A structurally-valid but semantically-bad ExclusiveStartKey (wrong types,
-            # a key from a different query) is a client error, not a server fault.
-            code = exc.response.get("Error", {}).get("Code")
-            if start_key and code == "ValidationException":
-                raise AppError("Invalid pagination cursor", code="invalid_cursor", status_code=400) from exc
-            raise
-        products = [self._from_item(item) for item in resp.get("Items", [])]
-        return products, _encode_cursor(resp.get("LastEvaluatedKey"))
+
+        # Per underlying query, scan at least `limit` items (more when filtering, to reduce
+        # round-trips). Cap loop iterations as a safety net against pathological sparsity.
+        scan_page = max(limit, 25) if filter_clauses else limit
+        max_iterations = 40 if filter_clauses else 1
+
+        collected: list[Product] = []
+        next_key = None
+        for _ in range(max_iterations):
+            kwargs = dict(base_kwargs, Limit=scan_page)
+            if start_key:
+                kwargs["ExclusiveStartKey"] = start_key
+            try:
+                resp = self._client.query(**kwargs)
+            except ClientError as exc:
+                code = exc.response.get("Error", {}).get("Code")
+                if start_key and code == "ValidationException":
+                    raise AppError(
+                        "Invalid pagination cursor", code="invalid_cursor", status_code=400
+                    ) from exc
+                raise
+            collected.extend(self._from_item(item) for item in resp.get("Items", []))
+            next_key = resp.get("LastEvaluatedKey")
+            # Stop when this (possibly filtered) page is exhausted or we have a full page.
+            if not next_key or len(collected) >= limit:
+                break
+            start_key = next_key
+
+        return collected, _encode_cursor(next_key)
 
     def get_product(self, product_id: str) -> Product | None:
         resp = self._client.get_item(
