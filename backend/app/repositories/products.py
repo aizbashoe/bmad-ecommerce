@@ -27,6 +27,9 @@ LISTING_PK_VALUE = "PRODUCT"  # constant partition for the unfiltered listing GS
 # A gsi_listing LastEvaluatedKey carries the GSI keys + base-table key. A decoded cursor
 # whose keys aren't a subset of these is not one we minted -> reject as invalid_cursor.
 _LISTING_CURSOR_KEYS = frozenset({"listingPk", "price", "productId"})
+# gsi_category cursors carry a different key set; used by the single-category fast path.
+# A cursor from one index used on the other fails the shape check -> invalid_cursor (AD-4 safety).
+_CATEGORY_CURSOR_KEYS = frozenset({"category", "price", "productId"})
 
 
 class ProductsRepository:
@@ -169,17 +172,37 @@ class ProductsRepository:
     # ---- reads (minimal; PLP query methods arrive in stories 1.3–1.6) -----
 
     def list_products(
-        self, limit: int = 24, cursor: str | None = None, search: str | None = None
+        self,
+        limit: int = 24,
+        cursor: str | None = None,
+        search: str | None = None,
+        categories: list[str] | None = None,
     ) -> tuple[list[Product], str | None]:
-        """Page the catalog via gsi_listing, price ascending (AD-4, FR-1/FR-2).
+        """Page the catalog, price ascending (AD-4, FR-1/FR-2/FR-3).
 
-        Without `search`: a single Query page. With `search`: a case-insensitive substring
-        FilterExpression on `searchText`, plus **loop-to-fill** — DynamoDB applies `Limit`
-        before the filter, so we follow LastEvaluatedKey and accumulate matches until we
-        have >= `limit` of them (or the index is exhausted). Returns (products, next_cursor);
-        next_cursor is an opaque base64 token or None on the last page (raw key never exposed).
+        Query strategy (AD-4):
+        - single category, no search -> `gsi_category` Query (native partition + price sort +
+          cursor; the fast path);
+        - otherwise -> `gsi_listing` Query with a composed FilterExpression (`contains(searchText)`
+          and/or `category IN (...)`) plus **loop-to-fill** (DynamoDB applies Limit before the
+          filter, so follow LastEvaluatedKey until >= `limit` matches or the index is exhausted).
+
+        Returns (products, next_cursor); next_cursor is an opaque base64 token or None on the
+        last page (raw key never exposed).
         """
         term = (search or "").strip().lower()
+        # Dedup (preserves the single-category fast path for ?category=home&category=home)
+        # and cap at DynamoDB's IN limit (100 operands) so a huge list is a 400, not a 500.
+        cats = list(dict.fromkeys(c.strip() for c in (categories or []) if c and c.strip()))
+        if len(cats) > 100:
+            raise AppError(
+                "Too many category filters (max 100)", code="too_many_categories", status_code=400
+            )
+
+        # AD-4 fast path: exactly one category and no search.
+        if len(cats) == 1 and not term:
+            return self._query_category_index(cats[0], limit, cursor)
+
         base_kwargs = {
             "TableName": self._table,
             "IndexName": GSI_LISTING,
@@ -187,12 +210,18 @@ class ProductsRepository:
             "ScanIndexForward": True,  # price ascending
         }
         expr_values: dict = {":pk": {"S": LISTING_PK_VALUE}}
-        # Optional filters are composed here so later stories (1.5 category facet) can add
-        # more clauses without a rewrite.
+        # Composable filter clauses (search from 1.4, category from 1.5).
         filter_clauses: list[str] = []
         if term:
             filter_clauses.append("contains(searchText, :q)")
             expr_values[":q"] = {"S": term}
+        if cats:
+            placeholders = []
+            for i, c in enumerate(cats):
+                ph = f":cat{i}"
+                expr_values[ph] = {"S": c}
+                placeholders.append(ph)
+            filter_clauses.append(f"category IN ({', '.join(placeholders)})")
         base_kwargs["ExpressionAttributeValues"] = expr_values
         if filter_clauses:
             base_kwargs["FilterExpression"] = " AND ".join(filter_clauses)
@@ -227,6 +256,57 @@ class ProductsRepository:
             start_key = next_key
 
         return collected, _encode_cursor(next_key)
+
+    def _query_category_index(
+        self, category: str, limit: int, cursor: str | None
+    ) -> tuple[list[Product], str | None]:
+        """AD-4 fast path: single category via gsi_category (PK=category, SK=price)."""
+        start_key = _decode_cursor(cursor, expected_keys=_CATEGORY_CURSOR_KEYS)
+        kwargs = {
+            "TableName": self._table,
+            "IndexName": GSI_CATEGORY,
+            "KeyConditionExpression": "category = :c",
+            "ExpressionAttributeValues": {":c": {"S": category}},
+            "Limit": limit,
+            "ScanIndexForward": True,  # price ascending
+        }
+        if start_key:
+            kwargs["ExclusiveStartKey"] = start_key
+        try:
+            resp = self._client.query(**kwargs)
+        except ClientError as exc:
+            code = exc.response.get("Error", {}).get("Code")
+            if start_key and code == "ValidationException":
+                raise AppError(
+                    "Invalid pagination cursor", code="invalid_cursor", status_code=400
+                ) from exc
+            raise
+        products = [self._from_item(item) for item in resp.get("Items", [])]
+        return products, _encode_cursor(resp.get("LastEvaluatedKey"))
+
+    def list_categories(self) -> list[str]:
+        """Distinct, sorted category list for the facet UI.
+
+        A projection Scan is O(table) — fine at POC scale (hundreds of items); a maintained
+        set or a count GSI is the production path (see deferred-work if raised).
+        """
+        seen: set[str] = set()
+        start_key = None
+        while True:
+            kwargs = {
+                "TableName": self._table,
+                "ProjectionExpression": "category",
+            }  # eventually-consistent is fine for facet options (and halves RCU)
+            if start_key:
+                kwargs["ExclusiveStartKey"] = start_key
+            resp = self._client.scan(**kwargs)
+            for item in resp.get("Items", []):
+                if "category" in item:
+                    seen.add(item["category"]["S"])
+            start_key = resp.get("LastEvaluatedKey")
+            if not start_key:
+                break
+        return sorted(seen)
 
     def get_product(self, product_id: str) -> Product | None:
         resp = self._client.get_item(

@@ -31,3 +31,9 @@ class ProductPage(CamelModel):
 
     items: list[ProductSummary]
     next_cursor: str | None = None
+
+
+class CategoryList(CamelModel):
+    """The distinct category values available for the PLP facet."""
+
+    categories: list[str]
