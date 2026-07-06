@@ -12,15 +12,17 @@ client = TestClient(app)
 
 
 class _FakeRepo:
-    def list_products(self, limit, cursor):
+    def list_products(self, limit, cursor, search=None):
         if cursor == "BAD":
             raise AppError("Invalid pagination cursor", code="invalid_cursor", status_code=400)
         from app.models.product import Product
 
+        # When searching, echo the term into the name so tests can assert passthrough.
+        label = f"Match {search}" if search else "Item"
         items = [
             Product(
                 product_id=f"p-{i}",
-                name=f"Item {i}",
+                name=f"{label} {i}",
                 description="d",
                 price=1000 + i,
                 category="home",
@@ -68,3 +70,17 @@ def test_invalid_cursor_400_envelope():
     resp = client.get("/products?cursor=BAD")
     assert resp.status_code == 400
     assert resp.json()["error"]["code"] == "invalid_cursor"
+
+
+def test_search_param_passthrough_ok():
+    resp = client.get("/products?limit=2&search=widget")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert len(body["items"]) == 2
+    assert body["items"][0]["name"].startswith("Match widget")
+
+
+def test_search_too_long_422_envelope():
+    resp = client.get(f"/products?search={'x' * 101}")
+    assert resp.status_code == 422
+    assert resp.json()["error"]["code"] == "validation_error"
