@@ -1,0 +1,39 @@
+# ── BMAD engine & generated artifacts (not tracked; re-created via `npx bmad-method install`) ──
+_bmad/
+.claude/
+_bmad-output/
+
+# ── Python (backend) ──
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+
+# ── Node / TypeScript (frontend) ──
+node_modules/
+dist/
+build/
+.vite/
+*.log
+npm-debug.log*
+.env.local
+.env.*.local
+
+# ── DynamoDB Local data ──
+.dynamodb/
+dynamodb-local-data/
+shared-local-instance.db
+
+# ── OS / editor ──
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/extensions.json
