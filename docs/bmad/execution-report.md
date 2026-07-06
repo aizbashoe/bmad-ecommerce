@@ -1,8 +1,8 @@
 # BMAD Execution Report — bmad-ecommerce
 
 A manifest of every BMAD step run on this project and the **actual files** each produced.
-Generated 2026-07-06. Companion to [BMAD.md](BMAD.md) (command log), [BMAD_DIAGRAM.md](BMAD_DIAGRAM.md)
-(lifecycle + skills), and [BMAD_STORY.md](BMAD_STORY.md) (story how-to).
+Generated 2026-07-06. Companion to [command-log.md](command-log.md) (command log), [lifecycle.md](lifecycle.md)
+(lifecycle + skills), and [story-guide.md](story-guide.md) (story how-to).
 
 Paths: planning/implementation artifacts live under `_bmad-output/` (tracked); the `_bmad/`
 engine + `.claude/` skills are gitignored (re-installable via `npx bmad-method install`).
@@ -41,7 +41,7 @@ engine + `.claude/` skills are gitignored (re-installable via `npx bmad-method i
 | # | Step | Skill (code) | Output file(s) |
 |---|------|--------------|----------------|
 | 19 | Document Project | `bmad-document-project` (DP) | `docs/index.md`, `project-overview.md`, `source-tree-analysis.md`, `architecture-backend.md`, `architecture-frontend.md`, `api-contracts-backend.md`, `data-models-backend.md`, `development-guide.md`, `deployment-guide.md`, `integration-architecture.md`, `project-parts.json`, `project-scan-report.json` |
-| — | Process runbooks *(hand-authored)* | — | `README.md`, `BMAD.md`, `BMAD_DIAGRAM.md`, `BMAD_STORY.md`, `BMAD_REPORT.md` |
+| — | Process runbooks *(hand-authored)* | — | `README.md` + `docs/bmad/{command-log,lifecycle,story-guide,execution-report,brownfield-guide}.md` |
 
 ## Code produced, by story
 

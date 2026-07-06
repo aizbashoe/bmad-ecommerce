@@ -35,12 +35,14 @@
 - [Integration Architecture](./integration-architecture.md)
 - [Project Parts (metadata)](./project-parts.json)
 
-## Related BMAD docs (repo root)
+## Related BMAD docs
 
 - [README.md](../README.md) — BMAD project guide
-- [BMAD.md](../BMAD.md) — command log / runbook + skills-per-phase
-- [BMAD_DIAGRAM.md](../BMAD_DIAGRAM.md) — lifecycle diagram + per-skill reference
-- [BMAD_STORY.md](../BMAD_STORY.md) — how to implement a story
+- [bmad/command-log.md](bmad/command-log.md) — command log / runbook + skills-per-phase
+- [bmad/lifecycle.md](bmad/lifecycle.md) — lifecycle diagram + per-skill reference
+- [bmad/story-guide.md](bmad/story-guide.md) — how to implement a story
+- [bmad/execution-report.md](bmad/execution-report.md) — steps → output-files manifest
+- [bmad/brownfield-guide.md](bmad/brownfield-guide.md) — adopting BMAD on an existing codebase
 - Planning artifacts: `_bmad-output/planning-artifacts/` (brief, PRD, architecture spine, epics)
 
 ## Getting Started

@@ -3,7 +3,7 @@
 How a single story goes from a line in `epics.md` to reviewed, tested, committed code —
 what each step reads, what generates the code, and the exact commands.
 
-See the whole lifecycle in [BMAD_DIAGRAM.md](BMAD_DIAGRAM.md); this doc zooms into **Phase 4 · the story cycle**.
+See the whole lifecycle in [lifecycle.md](lifecycle.md); this doc zooms into **Phase 4 · the story cycle**.
 
 ---
 
@@ -112,7 +112,7 @@ Run bmad-code-review on Story 1.3
 
 ## 5. Commit (fine-grained)
 
-Commit policy for this repo (see `BMAD.md`):
+Commit policy for this repo (see [command-log.md](command-log.md)):
 
 - **Fine-grained** — roughly one commit per FR or logical part, **not** one big commit per story.
 - **Review/verification fixes get their own `fix(...)` commit** (separate from the feature).
@@ -223,7 +223,7 @@ the path by size, and — critically — **still obey the architecture spine and
 | A change that **contradicts existing plan** (PRD/architecture/epics) | **`bmad-correct-course` (CC)** | Reconciles the change with prior decisions; may recommend revising PRD/architecture/epics. |
 | A large feature that deserves full rigor | Loop back to **`bmad-prd` → `bmad-architecture` → `bmad-create-epics-and-stories`** | For anything big, planning still pays off. |
 
-> **Always true, planning or not:** the [ARCHITECTURE-SPINE.md](../_bmad-output/planning-artifacts/architecture/architecture-bmad-ecommerce-2026-07-06/ARCHITECTURE-SPINE.md) ADs still bind (layering, camelCase, integer cents, boto3-only-in-repositories…), tests still run, and code still goes through `bmad-code-review` + a fine-grained commit.
+> **Always true, planning or not:** the [ARCHITECTURE-SPINE.md](../../_bmad-output/planning-artifacts/architecture/architecture-bmad-ecommerce-2026-07-06/ARCHITECTURE-SPINE.md) ADs still bind (layering, camelCase, integer cents, boto3-only-in-repositories…), tests still run, and code still goes through `bmad-code-review` + a fine-grained commit.
 
 ### 8.1 Fastest path — `bmad-quick-dev` (QQ)
 
@@ -284,4 +284,4 @@ planned codebase.
 
 ---
 
-*Skills are invoked by name in Claude Code (they're installed under `.claude/skills/`). The model reads the story file + architecture spine as context and writes the code — you review and approve. Each phase's exact commands for THIS project are logged in [BMAD.md](BMAD.md).*
+*Skills are invoked by name in Claude Code (they're installed under `.claude/skills/`). The model reads the story file + architecture spine as context and writes the code — you review and approve. Each phase's exact commands for THIS project are logged in [command-log.md](command-log.md).*

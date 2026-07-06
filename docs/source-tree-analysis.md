@@ -47,8 +47,14 @@ TestBmad/
 ├── docker-compose.yml            # ▶ api + dynamodb-local + frontend
 ├── .env.example                  # documents every env var
 ├── README.md                     # BMAD project guide
-├── BMAD.md / BMAD_DIAGRAM.md / BMAD_STORY.md   # BMAD process runbooks
-└── docs/                         # ← this generated documentation set
+└── docs/                         # generated documentation set
+    ├── (as-built docs: index, architecture, api-contracts, data-models, …)
+    └── bmad/                     # BMAD process runbooks
+        ├── command-log.md        #   commands + skills-per-phase
+        ├── lifecycle.md          #   lifecycle diagram + per-skill reference
+        ├── story-guide.md        #   how to implement a story
+        ├── execution-report.md   #   steps → output-files manifest
+        └── brownfield-guide.md   #   adopting BMAD on an existing codebase
 ```
 
 ## Critical directories

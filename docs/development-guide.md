@@ -65,7 +65,7 @@ All config is via environment variables (12-factor). `.env.example` documents ev
 
 ## BMAD workflow
 
-This project is built with the BMAD method. Process runbooks live at the repo root:
-[BMAD.md](../BMAD.md) (command log), [BMAD_DIAGRAM.md](../BMAD_DIAGRAM.md) (lifecycle + skills),
-[BMAD_STORY.md](../BMAD_STORY.md) (how to implement a story). Planning artifacts are under
+This project is built with the BMAD method. Process runbooks live under `docs/bmad/`:
+[command-log.md](bmad/command-log.md) (command log), [lifecycle.md](bmad/lifecycle.md) (lifecycle + skills),
+[story-guide.md](bmad/story-guide.md) (how to implement a story). Planning artifacts are under
 `_bmad-output/planning-artifacts/`.
