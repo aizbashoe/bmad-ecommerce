@@ -6,6 +6,7 @@ WORKDIR /app
 # Copy metadata + source before install: the Hatchling wheel build needs app/ present.
 COPY pyproject.toml ./
 COPY app ./app
+COPY scripts ./scripts
 RUN pip install --no-cache-dir --upgrade pip && pip install --no-cache-dir .
 
 EXPOSE 8000
