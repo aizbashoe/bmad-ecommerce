@@ -12,7 +12,7 @@ client = TestClient(app)
 
 
 class _FakeRepo:
-    def list_products(self, limit, cursor, search=None, categories=None):
+    def list_products(self, limit, cursor, search=None, categories=None, sort="price_asc"):
         if cursor == "BAD":
             raise AppError("Invalid pagination cursor", code="invalid_cursor", status_code=400)
         from app.models.product import Product
@@ -20,12 +20,13 @@ class _FakeRepo:
         # Echo the filters into the response so tests can assert passthrough.
         label = f"Match {search}" if search else "Item"
         category = (categories[0] if categories else "home")
+        # Encode the sort into price ordering so the endpoint test can assert it was passed.
         items = [
             Product(
                 product_id=f"p-{i}",
                 name=f"{label} {i}",
                 description="d",
-                price=1000 + i,
+                price=(1000 - i if sort == "price_desc" else 1000 + i),
                 category=category,
                 image_url=f"https://img/{i}",
                 available=True,
@@ -108,3 +109,17 @@ def test_categories_endpoint_shape():
     resp = client.get("/products/categories")
     assert resp.status_code == 200
     assert resp.json() == {"categories": ["books", "home", "toys"]}
+
+
+def test_sort_passthrough_ok():
+    resp = client.get("/products?sort=price_desc&limit=3")
+    assert resp.status_code == 200
+    prices = [i["price"] for i in resp.json()["items"]]
+    # The fake echoes price_desc as descending prices -> proves sort reached the repo.
+    assert prices == sorted(prices, reverse=True)
+
+
+def test_bad_sort_422_envelope():
+    resp = client.get("/products?sort=bogus")
+    assert resp.status_code == 422
+    assert resp.json()["error"]["code"] == "validation_error"
