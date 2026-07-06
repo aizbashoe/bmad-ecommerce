@@ -1,0 +1,47 @@
+# Local-first orchestration (AD-8): one command brings up the whole stack.
+#   docker compose up
+# Only local<->AWS difference is DYNAMODB_ENDPOINT (+ creds); see .env.example.
+
+services:
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: bmad-ecommerce-dynamodb
+    command: ["-jar", "DynamoDBLocal.jar", "-sharedDb", "-dbPath", "/data"]
+    working_dir: /home/dynamodblocal
+    volumes:
+      - dynamodb-data:/data
+    ports:
+      # Host 8001 -> container 8000 (kept off 8000 so the API can own 8000).
+      - "8001:8000"
+
+  api:
+    build: ./backend
+    container_name: bmad-ecommerce-api
+    depends_on:
+      - dynamodb-local
+    environment:
+      # Inside the compose network DynamoDB is at container port 8000.
+      DYNAMODB_ENDPOINT: "http://dynamodb-local:8000"
+      AWS_REGION: "us-east-1"
+      AWS_ACCESS_KEY_ID: "local"
+      AWS_SECRET_ACCESS_KEY: "local"
+      PRODUCTS_TABLE: "Products"
+      CARTS_TABLE: "Carts"
+      ORDERS_TABLE: "Orders"
+      FLAT_SHIPPING: "500"
+      CORS_ORIGINS: "http://localhost:5173"
+    ports:
+      - "8000:8000"
+
+  frontend:
+    build: ./frontend
+    container_name: bmad-ecommerce-frontend
+    depends_on:
+      - api
+    environment:
+      VITE_API_BASE_URL: "http://localhost:8000"
+    ports:
+      - "5173:5173"
+
+volumes:
+  dynamodb-data:
