@@ -319,3 +319,19 @@ architecture-backend.md, architecture-frontend.md, api-contracts-backend.md,
 data-models-backend.md, development-guide.md, deployment-guide.md,
 integration-architecture.md, project-parts.json, project-scan-report.json.
 Brownfield code documentation (as-built) — complements the planning artifacts.
+
+### Phase 4 — Epic 1 Retrospective (skill: `bmad-retrospective`, `ER`) — 2026-07-07
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-retrospective --key workflow
+# discovered epic-1 done (6/6 stories) from sprint-status.yaml; deep-read stories 1-1..1-6
+# review findings + deferred-work.md; first retro (no prior epic); previewed Epic 2 (PDP).
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-retrospective --key workflow.on_complete
+```
+
+**Output:** `_bmad-output/implementation-artifacts/epic-1-retro-2026-07-07.md`.
+`sprint-status.yaml`: `epic-1-retrospective` → **done**; 4 action items appended to a new
+`action_items:` section (all `open`). Key threads captured: cursor-not-bound chain
+(1.3→1.6, closed by query-fingerprint binding), loop-to-fill (Limit-before-Filter),
+dual-GSI facet, moto vs real-DynamoDB test fidelity. No re-planning required for Epic 2;
+Action Items 1 (frontend error envelope) & 2 (route-shadowing test) fold into story 2.1.

@@ -41,7 +41,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 2026-07-06
-last_updated: 2026-07-06  # story 1.1 created; epic-1 in-progress
+last_updated: 2026-07-07  # epic-1 retrospective completed
 project: Anonymous E-Commerce Storefront
 project_key: NOKEY
 tracking_system: file-system
@@ -56,7 +56,7 @@ development_status:
   1-4-search-products-by-keyword: done
   1-5-filter-by-category-facet: done
   1-6-sort-results: done
-  epic-1-retrospective: optional
+  epic-1-retrospective: done
 
   # Epic 2: Inspect a Product (PDP)
   epic-2: backlog
@@ -79,3 +79,21 @@ development_status:
   4-3-place-order: backlog
   4-4-view-order-summary: backlog
   epic-4-retrospective: optional
+
+action_items:
+  - epic: 1
+    action: "Parse the {error:{code,message}} envelope in the frontend API client; surface invalid_cursor distinctly and reset the cursor instead of a generic error"
+    owner: "Charlie"
+    status: open
+  - epic: 1
+    action: "Add route-shadowing regression test: /products/categories still resolves once the PDP /products/{id} route exists (land with story 2.1)"
+    owner: "Dana"
+    status: open
+  - epic: 1
+    action: "Log review-deferred 'not bound to query / unbounded input' hazards as tracked design debt with a target story, not open-ended deferrals"
+    owner: "Amelia"
+    status: open
+  - epic: 1
+    action: "Keep asserting cursor/pagination behavior against real-DynamoDB semantics, not moto defaults"
+    owner: "Dana"
+    status: open
