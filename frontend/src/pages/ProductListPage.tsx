@@ -184,6 +184,7 @@ export default function ProductListPage() {
             key={p.productId}
             href={`/products/${encodeURIComponent(p.productId)}`}
             style={{
+              position: "relative",
               border: "1px solid #e5e7eb",
               borderRadius: 8,
               padding: "0.75rem",
@@ -197,6 +198,28 @@ export default function ProductListPage() {
               alt={p.name}
               style={{ width: "100%", aspectRatio: "1 / 1", objectFit: "cover", borderRadius: 6 }}
             />
+            {/* Category stamp — top-left over the image */}
+            <span
+              style={{
+                position: "absolute",
+                top: "1.1rem",
+                left: "1.1rem",
+                background: "rgba(17,24,39,0.78)",
+                color: "#fff",
+                fontSize: "0.7rem",
+                fontWeight: 600,
+                textTransform: "uppercase",
+                letterSpacing: "0.03em",
+                padding: "0.15rem 0.5rem",
+                borderRadius: 999,
+                maxWidth: "calc(100% - 2.2rem)",
+                whiteSpace: "nowrap",
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+              }}
+            >
+              {p.category}
+            </span>
             <div style={{ marginTop: "0.5rem", fontWeight: 600 }}>{p.name}</div>
             <div style={{ color: "#374151" }}>{formatPrice(p.price)}</div>
             {!p.available && <div style={{ color: "#9ca3af", fontSize: "0.85rem" }}>Out of stock</div>}
