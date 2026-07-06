@@ -47,10 +47,13 @@ export interface ProductPage {
   nextCursor: string | null;
 }
 
-export function listProducts(params: { limit?: number; cursor?: string } = {}): Promise<ProductPage> {
+export function listProducts(
+  params: { limit?: number; cursor?: string; search?: string } = {},
+): Promise<ProductPage> {
   const qs = new URLSearchParams();
   if (params.limit != null) qs.set("limit", String(params.limit));
   if (params.cursor) qs.set("cursor", params.cursor);
+  if (params.search) qs.set("search", params.search);
   const suffix = qs.toString() ? `?${qs}` : "";
   return get<ProductPage>(`/products${suffix}`);
 }
