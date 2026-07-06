@@ -48,14 +48,23 @@ export interface ProductPage {
 }
 
 export function listProducts(
-  params: { limit?: number; cursor?: string; search?: string } = {},
+  params: { limit?: number; cursor?: string; search?: string; categories?: string[] } = {},
 ): Promise<ProductPage> {
   const qs = new URLSearchParams();
   if (params.limit != null) qs.set("limit", String(params.limit));
   if (params.cursor) qs.set("cursor", params.cursor);
   if (params.search) qs.set("search", params.search);
+  for (const c of params.categories ?? []) qs.append("category", c); // repeat for multiple
   const suffix = qs.toString() ? `?${qs}` : "";
   return get<ProductPage>(`/products${suffix}`);
+}
+
+export interface CategoryList {
+  categories: string[];
+}
+
+export function listCategories(): Promise<CategoryList> {
+  return get<CategoryList>("/products/categories");
 }
 
 /** Format integer cents as a display price. The only place cents becomes a string (AD-6). */
