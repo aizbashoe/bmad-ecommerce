@@ -285,4 +285,24 @@ cd frontend && npm install && npm run build # -> tsc + vite 8.1.3 build OK
 **Status:** story kept **in-progress** — code complete, but Task 4 (live `docker compose up`)
 is BLOCKED (Docker daemon not running in this environment); live end-to-end is a manual step.
 
-<!-- Next: run `docker compose up` to finish AC verification, then bmad-code-review, then commit per-part. -->
+#### Story 1.1 — verified + reviewed + done — 2026-07-06
+
+```bash
+docker compose up -d --build          # WSL/Docker now available (server 29.6.1)
+curl localhost:8000/health            # 200 {"status":"ok"}
+curl localhost:8000/health/deep       # 200 {"status":"ok","dynamodb":"reachable","tableCount":0}
+```
+- bmad-code-review run: 1 High / 5 Med / 5 Low → 11 patches applied, 3 deferred, 5 dismissed.
+- Live verification found dynamodb-local crash-loop (volume perms) → fix commit `72711c3` (`user: root`).
+- Commits: `98facf1` backend, `c134bad` frontend, `3913d9e` compose, `84c4a5d` docs, `72711c3` fix. Story 1.1 **done**.
+
+#### Story 1.2 — create-story (skill: `bmad-create-story`) — 2026-07-06
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-create-story --key workflow
+# authored story; sprint-status 1-2 -> ready-for-dev
+```
+**Output:** `_bmad-output/implementation-artifacts/1-2-provision-products-table-and-seed-catalog.md` (status: **ready-for-dev**)
+Provisions Products table + gsi_category/gsi_listing (AD-4) via ProductsRepository; idempotent seed of ~100-500 synthetic products (FR-16); moto-based tests.
+
+<!-- Next: bmad-dev-story for 1.2, then bmad-code-review, then commit per-part. -->
