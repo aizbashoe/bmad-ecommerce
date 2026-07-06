@@ -1,0 +1,39 @@
+{
+  "repository_type": "monorepo",
+  "generated": "2026-07-06",
+  "scan_level": "deep",
+  "parts": [
+    {
+      "part_id": "backend",
+      "display_name": "Backend API",
+      "root_path": "backend/",
+      "project_type_id": "backend",
+      "tech_stack": "Python 3.13, FastAPI 0.139, boto3, Pydantic v2, Uvicorn",
+      "entry_point": "backend/app/main.py",
+      "docs": ["architecture-backend.md", "api-contracts-backend.md", "data-models-backend.md"]
+    },
+    {
+      "part_id": "frontend",
+      "display_name": "Frontend SPA",
+      "root_path": "frontend/",
+      "project_type_id": "web",
+      "tech_stack": "React 19.2, TypeScript 5, Vite 8, Node 22",
+      "entry_point": "frontend/src/main.tsx",
+      "docs": ["architecture-frontend.md"]
+    }
+  ],
+  "integration_points": [
+    {
+      "from": "frontend",
+      "to": "backend",
+      "type": "REST/JSON over HTTP",
+      "details": "frontend/src/api/client.ts calls GET /health, GET /products; base URL from VITE_API_BASE_URL"
+    },
+    {
+      "from": "backend",
+      "to": "dynamodb",
+      "type": "AWS SDK (boto3)",
+      "details": "Access confined to backend/app/repositories/; endpoint dynamodb-local:8000 in-network"
+    }
+  ]
+}

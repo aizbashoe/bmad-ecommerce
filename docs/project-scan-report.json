@@ -1,0 +1,34 @@
+{
+  "workflow_version": "1.2.0",
+  "timestamps": { "started": "2026-07-06", "last_updated": "2026-07-06", "completed": "2026-07-06" },
+  "mode": "initial_scan",
+  "scan_level": "deep",
+  "project_root": "c:/Work/TestRepo/TestBmad",
+  "project_knowledge": "docs",
+  "repository_type": "monorepo",
+  "project_types": [
+    { "part_id": "backend", "project_type_id": "backend", "display_name": "Backend API" },
+    { "part_id": "frontend", "project_type_id": "web", "display_name": "Frontend SPA" }
+  ],
+  "completed_steps": [
+    { "step": "step_1", "status": "completed", "summary": "Classified as monorepo, 2 parts (backend, frontend)" },
+    { "step": "step_2", "status": "completed", "summary": "Existing docs: BMAD runbooks + planning artifacts noted" },
+    { "step": "step_3", "status": "completed", "summary": "Tech: FastAPI/Python 3.13; React 19/Vite 8" },
+    { "step": "step_4", "status": "completed", "summary": "API (3 endpoints) + data models (Products+2 GSIs) documented" },
+    { "step": "step_5", "status": "completed", "summary": "Annotated source tree written" },
+    { "step": "step_6", "status": "completed", "summary": "Dev + deployment guides written" },
+    { "step": "step_7", "status": "completed", "summary": "Integration architecture (frontend↔backend↔DynamoDB) documented" },
+    { "step": "step_8", "status": "completed", "summary": "Architecture docs written for 2 parts" },
+    { "step": "step_9", "status": "completed", "summary": "Supporting docs + project-parts.json written" },
+    { "step": "step_10", "status": "completed", "summary": "Master index generated" },
+    { "step": "step_12", "status": "completed", "summary": "Workflow complete" }
+  ],
+  "current_step": "completed",
+  "outputs_generated": [
+    "index.md", "project-overview.md", "source-tree-analysis.md",
+    "architecture-backend.md", "architecture-frontend.md",
+    "api-contracts-backend.md", "data-models-backend.md",
+    "development-guide.md", "deployment-guide.md", "integration-architecture.md",
+    "project-parts.json", "project-scan-report.json"
+  ]
+}
