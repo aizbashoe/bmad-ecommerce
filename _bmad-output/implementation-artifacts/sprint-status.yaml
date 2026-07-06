@@ -54,7 +54,7 @@ development_status:
   1-2-provision-products-table-and-seed-catalog: done
   1-3-browse-catalog-with-pagination: done
   1-4-search-products-by-keyword: done
-  1-5-filter-by-category-facet: backlog
+  1-5-filter-by-category-facet: done
   1-6-sort-results: backlog
   epic-1-retrospective: optional
 

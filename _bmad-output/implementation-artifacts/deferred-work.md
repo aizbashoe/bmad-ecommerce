@@ -1,5 +1,13 @@
 # Deferred Work
 
+## Deferred from: code review of story 1-5-filter-by-category-facet (2026-07-06)
+
+- **`gsi_listing` single hot partition** [backend/app/repositories/products.py] — every unfiltered/multi-category/search query hits one partition (`listingPk="PRODUCT"`) and filters within it; loop-to-fill amplifies reads. Fine at POC scale; beyond it, shard the listing partition (e.g. `listingPk = "PRODUCT#<n>"`) or move search/facets to OpenSearch (the AD-4 production path).
+- **`toggleCategory` functional-update race** [frontend/src/pages/ProductListPage.tsx] — derives `next` from the `selected` closure; two toggles in one render batch can race. Use `setSelected(prev => …)` and derive the fetch categories from the computed value. Low impact (single-user POC + request-id guard).
+- **`ValidationException` labeling on paged calls** [backend/app/repositories/products.py] — a paged `ValidationException` is always mapped to `invalid_cursor`; distinguish cursor/key errors from other validation failures if more filters are added.
+- **Route-shadowing regression test** [backend/app/api/products.py] — add a test that `/products/categories` still resolves once a `/products/{id}` (PDP, Epic 2) route exists.
+- **Case-insensitive category** — category match is exact (`gsi_category`/`IN`); a mismatched-case value via direct API returns empty. Normalize if needed.
+
 ## Deferred from: code review of story 1-4-search-products-by-keyword (2026-07-06)
 
 - **Cursor not bound to the search term** [backend `_encode_cursor`/`list_products`] — a cursor minted under `search=A` is structurally valid under `search=B` (encodes only the gsi_listing position). Practical trigger is removed by the frontend request-sequencing fix (cursor is always paired with the active term), but for robustness embed the filter (or a hash) in the opaque cursor and reject a mismatch.
