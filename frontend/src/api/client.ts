@@ -30,3 +30,32 @@ async function get<T>(path: string, timeoutMs: number = DEFAULT_TIMEOUT_MS): Pro
 export function getHealth(): Promise<HealthResponse> {
   return get<HealthResponse>("/health");
 }
+
+// --- Catalog (Story 1.3) ---
+
+export interface ProductSummary {
+  productId: string;
+  name: string;
+  price: number; // integer minor units (cents); formatted for display in the UI only
+  imageUrl: string;
+  category: string;
+  available: boolean;
+}
+
+export interface ProductPage {
+  items: ProductSummary[];
+  nextCursor: string | null;
+}
+
+export function listProducts(params: { limit?: number; cursor?: string } = {}): Promise<ProductPage> {
+  const qs = new URLSearchParams();
+  if (params.limit != null) qs.set("limit", String(params.limit));
+  if (params.cursor) qs.set("cursor", params.cursor);
+  const suffix = qs.toString() ? `?${qs}` : "";
+  return get<ProductPage>(`/products${suffix}`);
+}
+
+/** Format integer cents as a display price. The only place cents becomes a string (AD-6). */
+export function formatPrice(cents: number): string {
+  return `$${(cents / 100).toFixed(2)}`;
+}

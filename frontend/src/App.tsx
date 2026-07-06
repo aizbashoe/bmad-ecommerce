@@ -1,24 +1,7 @@
-import { useEffect, useState } from "react";
-import { getHealth } from "./api/client";
+import ProductListPage from "./pages/ProductListPage";
 
-// Walking-skeleton page: proves the frontend can reach the API through the typed
-// client (AC-6). Real pages (PLP/PDP/Cart/Checkout/OrderSummary) land in later stories.
+// Storefront root. The PLP is the home page (Story 1.3). A router arrives with the
+// PDP route in Epic 2; for now the app renders the product listing directly.
 export default function App() {
-  const [apiStatus, setApiStatus] = useState<string>("checking…");
-
-  useEffect(() => {
-    getHealth()
-      .then((h) => setApiStatus(h.status))
-      .catch(() => setApiStatus("unreachable"));
-  }, []);
-
-  return (
-    <main style={{ fontFamily: "system-ui, sans-serif", padding: "2rem" }}>
-      <h1>BMAD E-Commerce Storefront</h1>
-      <p>Walking skeleton — Story 1.1.</p>
-      <p>
-        API: <strong data-testid="api-status">{apiStatus}</strong>
-      </p>
-    </main>
-  );
+  return <ProductListPage />;
 }
