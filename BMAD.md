@@ -207,4 +207,22 @@ uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-sprint
 
 > Note: `yaml` is not in the base `uv` env — use `uv run --with pyyaml python ...` to parse the sprint file.
 
+### Git setup — 2026-07-06
+
+Repo initialized and pushed to GitHub (`github.com/aizbashoe/bmad-ecommerce`, private).
+`.gitignore` excludes the BMAD engine (`_bmad/`, `.claude/`) and generated artifacts
+(`_bmad-output/`); only app code + `README.md`/`BMAD.md` are tracked.
+
+```bash
+git init -b main
+# .gitignore created (ignores _bmad/, .claude/, _bmad-output/, Python/Node/DynamoDB-local junk)
+git add -A
+git commit -m "chore: initialize repo with BMAD planning docs and runbook"   # f0bddd4
+git remote add origin https://github.com/aizbashoe/bmad-ecommerce.git
+git push -u origin main   # Git Credential Manager handled auth (no token needed)
+```
+
+**Commit policy (agreed):** one commit per completed story; Claude proposes each commit
+and waits for user approval before running it. Conventional-commit messages.
+
 <!-- Append future phases (Story cycle: create-story -> dev-story -> code-review) below as they run. -->
