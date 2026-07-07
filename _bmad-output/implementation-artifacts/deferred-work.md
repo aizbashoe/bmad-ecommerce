@@ -1,5 +1,12 @@
 # Deferred Work
 
+## Deferred from: code review of story 5-1-align-plp-with-ux (2026-07-07)
+
+- **Card hover-lift not implemented** [frontend/src/pages/ProductListPage.tsx] — DESIGN.md (Elevation & Depth) + EXPERIENCE.md + `plp-mock.html` specify a `0 6px 18px rgba(0,0,0,.08)` hover lift on cards. Inline styles can't express `:hover`; needs a CSS-module or a `<style>` block. Fold into a small styling-polish pass (with the focus ring below).
+- **`focus`-ring token missing** [frontend/src/theme/tokens.ts + PLP/PDP] — DESIGN.md defines `focus: #159f4a` and the a11y floor wants a visible green focus ring, but `tokens.color.focus` doesn't exist and no `outline` is set (browser default ring still shows — keyboard operability is intact). Add the token + an `:focus-visible` outline in the styling-polish pass.
+- **Empty first page with a cursor shows "0 products + Load more" with no grid** [frontend/src/pages/ProductListPage.tsx] — the documented loop-to-fill state; consider an explicit affordance or auto-advance rather than a bare screen.
+- **Hardcoded facet-label color `#374151`** [frontend/src/pages/ProductListPage.tsx] — not a DESIGN token; move to a token (e.g. a `text-secondary`) when the palette is extended.
+
 ## Deferred from: code review of story 2-1-view-product-detail (2026-07-07)
 
 - **Breadcrumb category not navigable** [frontend/src/pages/ProductDetailPage.tsx] — the `{category}` crumb is a `<span>`, not a link (EXPERIENCE.md → Interaction Primitives specifies breadcrumb→category nav). Requires URL-driven PLP filters (currently in-component state). Do it with the **PLP-restyle story** (query-param facets).

@@ -338,7 +338,41 @@ docker compose up -d --build api frontend             # live-verified detail/404
   Approve-with-patches → 3 patches (product_id length cap, abort-relabel fix, 404 message assertion),
   7 deferred (→ deferred-work.md), 2 dismissed. Both Epic 1 retro action items satisfied. Story 2.1 **done**.
 
-<!-- Next: fine-grained commits for story 2.1 (proposed, awaiting OK), then Epic 2 complete. -->
+<!-- Story 2.1 committed: c796c2a (backend), 67e0a71 + 7e8da7f + 8083ac9 (frontend), 1cc8f49 (docs). Epic 2 done. -->
+
+### Epic 5 (added post-UX) — Story 5.1 create-story (skill: `bmad-create-story`, `CS`) — 2026-07-07
+
+New epic **Epic 5: Storefront UX Alignment**, pulled forward ahead of Epics 3–4 to restyle the
+already-shipped PLP to the finalized UX (the shared shell + tokens landed with 2.1). Added to
+`epics.md` + `sprint-status.yaml` (epic-5 in-progress, 5-1 ready-for-dev).
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-create-story --key workflow
+```
+
+**Output:** `_bmad-output/implementation-artifacts/5-1-align-plp-with-ux.md` (status: **ready-for-dev**).
+Restyle-only (no backend change): left-sidebar facet + token-styled cards; preserve all Epic 1
+behavior; fold in the deferred PLP `invalid_cursor` cursor-reset (retro action item 1, second half).
+
+#### Story 5.1 — dev-story + code-review (skills: `bmad-dev-story` `DS`, `bmad-code-review` `CR`) — 2026-07-07
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-dev-story --key workflow
+git rev-parse HEAD            # baseline_commit 1cc8f49
+# frontend-only restyle: ProductListPage.tsx -> two-column left-sidebar facet + token styling
+#   + invalid_cursor recovery; no backend change
+cd frontend && npm run build  # -> tsc + vite build OK
+docker compose up -d --build frontend   # PLP 200; backend listing + /categories unchanged
+```
+
+- bmad-code-review: 3 parallel adversarial reviewers. Approve-with-patches → 2 patches
+  (result-context label gated on loading/error; recovery no longer blanks items), 4 deferred,
+  1 dismissed. All Epic 1 behavior preserved; deferred PLP invalid_cursor reset now done.
+  Story 5.1 **done**, **epic-5 done**.
+
+<!-- Next: commits at the end for story 5.1 + the redo-story guide. -->
+
+
 
 
 

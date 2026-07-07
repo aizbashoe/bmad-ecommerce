@@ -41,7 +41,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 2026-07-06
-last_updated: 2026-07-07  # story 2.1 done (reviewed, patched)
+last_updated: 2026-07-07  # story 5.1 done (reviewed, patched); epic-5 done
 project: Anonymous E-Commerce Storefront
 project_key: NOKEY
 tracking_system: file-system
@@ -79,6 +79,11 @@ development_status:
   4-3-place-order: backlog
   4-4-view-order-summary: backlog
   epic-4-retrospective: optional
+
+  # Epic 5: Storefront UX Alignment (added 2026-07-07 after the UX phase; pulled forward)
+  epic-5: done
+  5-1-align-plp-with-ux: done
+  epic-5-retrospective: optional
 
 action_items:
   - epic: 1

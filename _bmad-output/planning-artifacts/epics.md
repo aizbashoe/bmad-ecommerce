@@ -99,6 +99,10 @@ A shopper can add Products to a Cart and manage it — view line items and total
 A shopper can check out as a guest and see an order confirmation: enter shipping details (inline validation), complete a simulated (success-only) payment, place the order as an immutable record with a reference number (clearing the Cart atomically), and view the Order Summary.
 **FRs covered:** FR-12, FR-13, FR-14, FR-15
 
+### Epic 5: Storefront UX Alignment (added 2026-07-07, after the UX phase)
+Apply the finalized design system (`ux-designs/…/DESIGN.md` + `EXPERIENCE.md`) to surfaces built before the UX contracts existed. No new functional requirements — a visual/interaction restyle of the already-shipped PLP to match the agreed UX (the shared shell + tokens landed with Epic 2 / story 2.1). Pulled forward ahead of Epics 3–4 by request.
+**FRs covered:** none new (restyle of FR-1..FR-4 surfaces).
+
 ---
 
 ## Epic 1: Browse & Discover the Catalog (Foundation + PLP)
@@ -215,6 +219,27 @@ So that I can decide whether to buy it.
 **When** the id does not exist
 **Then** the API returns a 404 with the `{error:{code,message}}` envelope (AD-5) and the UI shows a not-found state
 **And** all data access remains inside the `ProductsRepository` (AD-1).
+
+## Epic 5: Storefront UX Alignment
+
+Restyle surfaces built before the UX contracts to the finalized design system. No new FRs. Governed by AD-5 (typed client unchanged) and the UX spines (DESIGN.md tokens + EXPERIENCE.md IA/state patterns). The shared shell (`StoreHeader` + `theme/tokens.ts`) already exists from story 2.1.
+
+### Story 5.1: Align the PLP with the new UX
+
+As an anonymous shopper,
+I want the product list to match the storefront's visual design,
+so that browsing feels like one coherent, polished store.
+
+**Acceptance Criteria:**
+
+**Given** the PLP,
+**When** it renders,
+**Then** the category facet appears in a **left sidebar** (not the top-bar checkboxes) with the results grid to its right, per `EXPERIENCE.md` (PLP IA) and `mockups/plp-mock.html`
+**And** the toolbar shows the result context and the existing sort control; active-filter chips + Clear-all are preserved
+**And** cards use the `DESIGN.md` tokens (card, category badge, price in the price accent, availability treatment) via `theme/tokens.ts`
+**And** all Epic 1 behavior is preserved exactly — search, multi-category OR filter, sort, cursor "Load more", empty/loading/error states, latest-wins guard, and client-side `<Link>` navigation to the PDP
+**And** the PLP resets the cursor and refetches page 1 on an `invalid_cursor` `ApiError` (completes Epic 1 retro action item 1's second half; deferred from 2.1)
+**And** (if URL-driven filters are introduced) the PDP breadcrumb category becomes a link to the filtered PLP (deferred from 2.1) — otherwise explicitly left for a later story.
 
 ## Epic 3: Shopping Cart
 
