@@ -157,15 +157,12 @@ export default function CartPage() {
                 <span>Order total</span>
                 <span>{formatPrice(cart.orderTotal)}</span>
               </div>
-              <button
-                type="button"
-                disabled
-                title="Checkout arrives in Epic 4"
-                style={{ width: "100%", background: "#cbd5e1", color: "#fff", border: "none", borderRadius: tokens.radius.sm, height: 48, fontSize: 16, fontWeight: 700, cursor: "not-allowed", marginTop: 16 }}
+              <Link
+                to="/checkout"
+                style={{ display: "block", textAlign: "center", width: "100%", boxSizing: "border-box", background: tokens.color.green, color: "#fff", border: "none", borderRadius: tokens.radius.sm, height: 48, lineHeight: "48px", fontSize: 16, fontWeight: 700, textDecoration: "none", marginTop: 16 }}
               >
                 Checkout
-              </button>
-              <p style={{ color: tokens.color.muted, fontSize: 12, marginTop: 10 }}>Checkout is wired in Epic 4.</p>
+              </Link>
             </aside>
           </div>
         )}

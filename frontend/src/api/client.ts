@@ -145,11 +145,11 @@ export interface Cart {
  * token the API echoes back in X-Guest-Token, drops a rejected token, and maps the
  * {error:{code,message}} envelope to ApiError. Preserves the abort-timeout contract of `get<T>`.
  */
-async function cartFetch(
+async function authedFetch<T>(
   path: string,
   init: { method?: string; body?: unknown } = {},
   timeoutMs: number = DEFAULT_TIMEOUT_MS,
-): Promise<Cart> {
+): Promise<T> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -180,7 +180,7 @@ async function cartFetch(
     }
     const issued = res.headers.get(GUEST_TOKEN_HEADER);
     if (issued) setGuestToken(issued);
-    return (await res.json()) as Cart;
+    return (await res.json()) as T;
   } finally {
     clearTimeout(timer);
   }
@@ -188,22 +188,57 @@ async function cartFetch(
 
 /** Resolve (or establish) the anonymous cart. */
 export function getCart(): Promise<Cart> {
-  return cartFetch("/cart");
+  return authedFetch<Cart>("/cart");
 }
 
 /** Add a product to the cart (creates or increments the line). */
 export function addToCart(productId: string, quantity: number): Promise<Cart> {
-  return cartFetch("/cart/items", { method: "POST", body: { productId, quantity } });
+  return authedFetch<Cart>("/cart/items", { method: "POST", body: { productId, quantity } });
 }
 
 /** Set a line item's quantity; 0 removes it. */
 export function updateCartItem(productId: string, quantity: number): Promise<Cart> {
-  return cartFetch(`/cart/items/${encodeURIComponent(productId)}`, { method: "PATCH", body: { quantity } });
+  return authedFetch<Cart>(`/cart/items/${encodeURIComponent(productId)}`, { method: "PATCH", body: { quantity } });
 }
 
 /** Remove a line item from the cart. */
 export function removeCartItem(productId: string): Promise<Cart> {
-  return cartFetch(`/cart/items/${encodeURIComponent(productId)}`, { method: "DELETE" });
+  return authedFetch<Cart>(`/cart/items/${encodeURIComponent(productId)}`, { method: "DELETE" });
+}
+
+// --- Checkout / orders (Epic 4) ---
+
+export interface ShippingDetails {
+  fullName: string;
+  address1: string;
+  address2: string;
+  city: string;
+  region: string;
+  postalCode: string;
+  country: string;
+  email: string;
+}
+
+export interface Order {
+  orderId: string;
+  reference: string;
+  guestId: string;
+  items: CartLine[];
+  subtotal: number;
+  shipping: number;
+  orderTotal: number;
+  shippingDetails: ShippingDetails;
+  createdAt: string;
+}
+
+/** Place the order: snapshots the cart into an immutable Order and clears the cart (AD-7). */
+export function placeOrder(shipping: ShippingDetails): Promise<Order> {
+  return authedFetch<Order>("/checkout", { method: "POST", body: { shipping } });
+}
+
+/** Fetch a placed order for the confirmation page (scoped to the owning guest token). */
+export function getOrder(orderId: string): Promise<Order> {
+  return authedFetch<Order>(`/orders/${encodeURIComponent(orderId)}`);
 }
 
 /** Format integer cents as a display price. The only place cents becomes a string (AD-6). */

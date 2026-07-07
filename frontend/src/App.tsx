@@ -4,6 +4,8 @@ import { CartProvider } from "./state/cart";
 import ProductListPage from "./pages/ProductListPage";
 import ProductDetailPage from "./pages/ProductDetailPage";
 import CartPage from "./pages/CartPage";
+import CheckoutPage from "./pages/CheckoutPage";
+import OrderSummaryPage from "./pages/OrderSummaryPage";
 
 // Storefront root. A shared shell (StoreHeader) + cart state (CartProvider) wrap every route.
 // "/" -> PLP (Epic 1), "/products/:id" -> PDP (Epic 2), "/cart" -> Cart (Epic 3).
@@ -16,6 +18,8 @@ export default function App() {
           <Route path="/" element={<ProductListPage />} />
           <Route path="/products/:id" element={<ProductDetailPage />} />
           <Route path="/cart" element={<CartPage />} />
+          <Route path="/checkout" element={<CheckoutPage />} />
+          <Route path="/order/:orderId" element={<OrderSummaryPage />} />
         </Routes>
       </CartProvider>
     </BrowserRouter>
