@@ -1,6 +1,8 @@
 // Single typed API-client module (AD-5). Every network call to the backend goes
 // through here; components never fetch directly. Base URL is 12-factor config.
 
+import { clearGuestToken, getGuestToken, setGuestToken } from "../state/guestSession";
+
 // `||` (not `??`) so an explicitly empty VITE_API_BASE_URL falls back rather than
 // collapsing to a relative URL against the frontend origin.
 const API_BASE_URL: string =
@@ -115,6 +117,51 @@ export interface ProductDetail extends ProductSummary {
 /** Fetch one product's full detail. A missing id throws ApiError{status:404, code:"not_found"}. */
 export function getProduct(productId: string): Promise<ProductDetail> {
   return get<ProductDetail>(`/products/${encodeURIComponent(productId)}`);
+}
+
+// --- Cart / guest session (Story 3.1) ---
+
+const GUEST_TOKEN_HEADER = "X-Guest-Token";
+
+export interface Cart {
+  guestId: string;
+  items: []; // line items arrive in Story 3.2
+}
+
+/**
+ * Resolve (or establish) the anonymous cart (AD-2). Sends the stored guest token when present,
+ * persists the token the API echoes back in the X-Guest-Token response header, and returns the
+ * cart. Preserves the abort-timeout + {error:{code,message}} -> ApiError behavior of `get<T>`.
+ */
+export async function getCart(timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<Cart> {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const token = getGuestToken();
+    const headers: Record<string, string> = {};
+    if (token) headers[GUEST_TOKEN_HEADER] = token;
+    const res = await fetch(`${API_BASE_URL}/cart`, { headers, signal: controller.signal });
+    if (!res.ok) {
+      let code = "http_error";
+      let message = `Request failed: ${res.status}`;
+      try {
+        const body = (await res.json()) as { error?: { code?: string; message?: string } };
+        if (body?.error?.code) code = body.error.code;
+        if (body?.error?.message) message = body.error.message;
+      } catch (err) {
+        if (controller.signal.aborted) throw err; // timeout/abort stays a generic error
+      }
+      // A rejected token would wedge the session in a permanent 400 — drop it so the next
+      // call re-establishes a fresh guest session.
+      if (code === "invalid_guest_token") clearGuestToken();
+      throw new ApiError(res.status, code, message);
+    }
+    const issued = res.headers.get(GUEST_TOKEN_HEADER);
+    if (issued) setGuestToken(issued);
+    return (await res.json()) as Cart;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 /** Format integer cents as a display price. The only place cents becomes a string (AD-6). */
