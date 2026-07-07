@@ -307,6 +307,22 @@ Provisions Products table + gsi_category/gsi_listing (AD-4) via ProductsReposito
 
 <!-- Next: bmad-dev-story for 1.2, then bmad-code-review, then commit per-part. -->
 
+### Epic 2 — Story 2.1 create-story (skill: `bmad-create-story`, `CS`) — 2026-07-07
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-create-story --key workflow
+# authored story from epics Epic 2 + architecture spine + UX contracts; sprint-status: epic-2 -> in-progress, 2-1 -> ready-for-dev
+```
+
+**Output:** `_bmad-output/implementation-artifacts/2-1-view-product-detail.md` (status: **ready-for-dev**).
+PDP: `GET /products/{id}` (GetItem, 404 not-found envelope, AD-1/AD-5) + client-side router +
+shared UX shell (BMAD POC Store header + DESIGN.md tokens) + two-column PDP page. Folds in the
+two Epic 1 retro action items (route-shadow test; frontend error-envelope parsing → distinct
+404 not-found state). PLP facet restyle deliberately deferred to its own story.
+
+<!-- Next: bmad-dev-story for 2.1, then bmad-code-review, then fine-grained commits. -->
+
+
 ### Document Project (skill: `bmad-document-project`) — 2026-07-06
 
 ```bash
