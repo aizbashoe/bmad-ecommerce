@@ -12,6 +12,22 @@ export interface HealthResponse {
   status: string;
 }
 
+/**
+ * A structured API failure carrying the backend's `{error:{code,message}}` envelope (AD-5).
+ * Lets callers branch on `code`/`status` (e.g. render a 404 not-found state distinctly from a
+ * generic error). A network/abort/timeout failure throws a plain Error instead — not an ApiError.
+ */
+export class ApiError extends Error {
+  readonly status: number;
+  readonly code: string;
+  constructor(status: number, code: string, message: string) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+    this.code = code;
+  }
+}
+
 async function get<T>(path: string, timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<T> {
   // Abort a stalled request so callers surface an error instead of hanging forever.
   const controller = new AbortController();
@@ -19,7 +35,21 @@ async function get<T>(path: string, timeoutMs: number = DEFAULT_TIMEOUT_MS): Pro
   try {
     const res = await fetch(`${API_BASE_URL}${path}`, { signal: controller.signal });
     if (!res.ok) {
-      throw new Error(`Request failed: ${res.status}`);
+      // Parse the {error:{code,message}} envelope so callers can distinguish, e.g., a 404
+      // not_found from a 400 invalid_cursor. Fall back if the body isn't the expected shape.
+      let code = "http_error";
+      let message = `Request failed: ${res.status}`;
+      try {
+        const body = (await res.json()) as { error?: { code?: string; message?: string } };
+        if (body?.error?.code) code = body.error.code;
+        if (body?.error?.message) message = body.error.message;
+      } catch (err) {
+        // If the abort/timeout fired while reading the body, it's a generic failure — not
+        // an ApiError (keeps the "network/abort -> plain Error" contract). Otherwise the
+        // body just wasn't the expected JSON envelope; keep the fallbacks.
+        if (controller.signal.aborted) throw err;
+      }
+      throw new ApiError(res.status, code, message);
     }
     return (await res.json()) as T;
   } finally {
@@ -74,6 +104,17 @@ export interface CategoryList {
 
 export function listCategories(): Promise<CategoryList> {
   return get<CategoryList>("/products/categories");
+}
+
+// --- Product detail / PDP (Story 2.1) ---
+
+export interface ProductDetail extends ProductSummary {
+  description: string;
+}
+
+/** Fetch one product's full detail. A missing id throws ApiError{status:404, code:"not_found"}. */
+export function getProduct(productId: string): Promise<ProductDetail> {
+  return get<ProductDetail>(`/products/${encodeURIComponent(productId)}`);
 }
 
 /** Format integer cents as a display price. The only place cents becomes a string (AD-6). */
