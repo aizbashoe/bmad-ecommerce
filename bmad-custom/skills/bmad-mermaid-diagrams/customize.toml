@@ -1,0 +1,28 @@
+# Workflow customization surface for bmad-mermaid-diagrams.
+# Resolved by _bmad/scripts/resolve_customization.py in base -> team -> user order:
+#   base: this file
+#   team: {project-root}/_bmad/custom/bmad-mermaid-diagrams.toml
+#   user: {project-root}/_bmad/custom/bmad-mermaid-diagrams.user.toml
+# Merge rules: scalars override; arrays (persistent_facts, activation_steps_*) append.
+
+[workflow]
+
+activation_steps_prepend = []
+activation_steps_append = []
+
+# Static context loaded on activation. project-context.md (if present) carries repo-wide
+# conventions the diagrams should respect.
+persistent_facts = [
+  "file:{project-root}/**/project-context.md",
+]
+
+# Optional hard-validation / rendering command. The skill NEVER requires this — embedding
+# valid Mermaid source is the deliverable. When set and the user opts in, the skill may run it
+# to validate a diagram, or to render to SVG/PNG. Example uses the official CLI:
+#   npx --yes @mermaid-js/mermaid-cli -i <input.mmd> -o <output.svg>
+render_command = "npx --yes @mermaid-js/mermaid-cli"
+
+# Where aggregate-mode output is written when the user chooses a single diagrams index.
+aggregate_output = "{project-root}/docs/diagrams.md"
+
+on_complete = ""

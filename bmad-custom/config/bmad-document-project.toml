@@ -1,0 +1,5 @@
+# Team override for bmad-document-project (merged over the base customize.toml).
+# Integrates the bmad-mermaid-diagrams skill into doc generation: once DP finishes
+# producing the as-built docs, offer to enrich them with Mermaid diagrams.
+[workflow]
+on_complete = "Offer to run the bmad-mermaid-diagrams skill to add Mermaid diagrams (component/layer view, data-model ER, API request-flow sequence, story/epic status lifecycle) to the docs just generated. If the user agrees, invoke bmad-mermaid-diagrams scoped to the freshly generated docs."
