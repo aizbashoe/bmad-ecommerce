@@ -4,7 +4,8 @@ Sits between the API routers and ProductsRepository. Holds no boto3; maps domain
 Products to API response models. Grows with search/facet/sort in Stories 1.4–1.6.
 """
 
-from app.models.catalog import CategoryList, ProductPage, ProductSummary
+from app.core.errors import NotFoundError
+from app.models.catalog import CategoryList, ProductDetail, ProductPage, ProductSummary
 from app.repositories.products import ProductsRepository
 
 
@@ -30,3 +31,10 @@ class CatalogService:
 
     def list_categories(self) -> CategoryList:
         return CategoryList(categories=self._repo.list_categories())
+
+    def get_product(self, product_id: str) -> ProductDetail:
+        """Return one product's detail (FR-5); unknown id -> 404 not_found (AD-5)."""
+        product = self._repo.get_product(product_id)
+        if product is None:
+            raise NotFoundError(f"Product '{product_id}' was not found")
+        return ProductDetail.from_product(product)

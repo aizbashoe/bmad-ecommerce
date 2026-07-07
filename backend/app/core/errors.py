@@ -26,6 +26,13 @@ class AppError(Exception):
             self.status_code = status_code
 
 
+class NotFoundError(AppError):
+    """A requested resource does not exist -> 404 with code ``not_found`` (AD-5)."""
+
+    status_code = 404
+    code = "not_found"
+
+
 def error_body(code: str, message: str) -> dict:
     return {"error": {"code": code, "message": message}}
 

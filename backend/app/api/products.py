@@ -4,9 +4,9 @@ No business logic and no boto3 here — delegates to CatalogService. FastAPI val
 `limit` (422 -> error envelope); a malformed cursor raises AppError(invalid_cursor) -> 400.
 """
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Path, Query
 
-from app.models.catalog import CategoryList, ProductPage, SortOption
+from app.models.catalog import CategoryList, ProductDetail, ProductPage, SortOption
 from app.services.catalog import CatalogService
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -43,3 +43,15 @@ def list_products(
     return service.list_products(
         limit=limit, cursor=cursor, search=search, categories=category, sort=sort.value
     )
+
+
+# Registered LAST so the literal `/categories` and the `""` listing routes are matched
+# before this path-param route (they must never be shadowed by `/{product_id}`).
+@router.get("/{product_id}", response_model=ProductDetail)
+def get_product(
+    # Bounded well under DynamoDB's 2048-byte key limit so an oversized id is a clean 422
+    # (validation_error envelope) instead of a ValidationException -> 500 from GetItem.
+    product_id: str = Path(min_length=1, max_length=256, description="Product id."),
+    service: CatalogService = Depends(get_catalog_service),
+) -> ProductDetail:
+    return service.get_product(product_id)

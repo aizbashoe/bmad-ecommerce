@@ -35,6 +35,30 @@ class ProductSummary(CamelModel):
         )
 
 
+class ProductDetail(CamelModel):
+    """A single product's full detail (PDP). Adds `description` to the summary fields (FR-5)."""
+
+    product_id: str
+    name: str
+    description: str
+    price: int  # integer minor units (cents), AD-6
+    image_url: str
+    category: str
+    available: bool
+
+    @classmethod
+    def from_product(cls, p: Product) -> "ProductDetail":
+        return cls(
+            product_id=p.product_id,
+            name=p.name,
+            description=p.description,
+            price=p.price,
+            image_url=p.image_url,
+            category=p.category,
+            available=p.available,
+        )
+
+
 class ProductPage(CamelModel):
     """One page of products plus an opaque cursor to the next page (null on last page)."""
 
