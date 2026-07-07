@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PLP mock — bmad-ecommerce</title>
+<style>
+  :root {
+    --green: #159f4a; --green-dark: #0f7d3a;
+    --ink: #17181a; --muted: #6b7280; --line: #e5e7eb; --bg: #f4f5f7;
+    --price: #d81e2c; --badge: rgba(17,24,39,.82); --header: #1f1f1f;
+    --radius: 10px; --sp: 16px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); }
+
+  /* Header */
+  header { background: var(--header); color: #fff; }
+  .hbar { display: flex; align-items: center; gap: 16px; max-width: 1240px; margin: 0 auto; padding: 12px 20px; }
+  .logo { font-weight: 800; font-size: 20px; color: #fff; letter-spacing: -.02em; }
+  .logo b { color: var(--green); }
+  .catalog { display: inline-flex; align-items: center; gap: 8px; background: #333; color: #fff; border: none; border-radius: 8px; padding: 10px 16px; font-weight: 600; cursor: pointer; }
+  .search { flex: 1; display: flex; }
+  .search input { flex: 1; border: none; border-radius: 8px 0 0 8px; padding: 11px 14px; font-size: 15px; }
+  .search button { border: none; background: var(--green); color: #fff; font-weight: 700; padding: 0 22px; border-radius: 0 8px 8px 0; cursor: pointer; }
+  .icons { display: flex; gap: 18px; font-size: 13px; }
+  .icons span { position: relative; cursor: pointer; }
+  .icons .dot { position: absolute; top: -8px; right: -10px; background: var(--green); color: #fff; border-radius: 999px; font-size: 10px; padding: 1px 5px; }
+
+  /* Layout */
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 20px; }
+  .toolbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+  .count { color: var(--muted); font-size: 14px; }
+  .sort { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; }
+  .sort select { padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; }
+  .cols { display: grid; grid-template-columns: 250px 1fr; gap: 24px; }
+
+  /* Facet sidebar */
+  aside { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; height: fit-content; }
+  aside h3 { margin: 0 0 12px; font-size: 15px; }
+  .facet { display: flex; align-items: center; gap: 9px; padding: 6px 0; font-size: 14px; color: #374151; cursor: pointer; }
+  .facet input { width: 16px; height: 16px; accent-color: var(--green); }
+  .clear { margin-top: 14px; background: none; border: none; color: var(--green); font-weight: 600; cursor: pointer; padding: 0; font-size: 14px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+  .chip { display: inline-flex; align-items: center; gap: 6px; background: #eef2ff; border: 1px solid #c7d2fe; border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+  .chip button { border: none; background: none; cursor: pointer; font-weight: 700; }
+
+  /* Grid */
+  .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+  .card { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 12px; text-decoration: none; color: inherit; display: block; transition: box-shadow .15s; }
+  .card:hover { box-shadow: 0 6px 18px rgba(0,0,0,.08); }
+  .thumb { position: relative; }
+  .thumb img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 8px; background: #f0f1f3; }
+  .badge { position: absolute; top: 8px; left: 8px; background: var(--badge); color: #fff; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; padding: 3px 8px; border-radius: 999px; max-width: calc(100% - 16px); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .name { margin: 10px 0 6px; font-weight: 600; font-size: 14px; line-height: 1.35; min-height: 38px; }
+  .price { color: var(--price); font-weight: 800; font-size: 18px; }
+  .stock { font-size: 12.5px; margin-top: 4px; color: var(--green-dark); font-weight: 600; }
+  .stock.out { color: #9ca3af; }
+  .note { max-width: 1240px; margin: 8px auto 0; padding: 0 20px; color: var(--muted); font-size: 12.5px; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="hbar">
+      <div class="logo">BMAD <b>POC</b> Store</div>
+      <button class="catalog">☰ Catalog</button>
+      <form class="search" onsubmit="return false"><input placeholder="Search products…" /><button>Search</button></form>
+      <div class="icons">
+        <span>♡ Wishlist</span>
+        <span>🛒 Cart<i class="dot">0</i></span>
+      </div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <div class="toolbar">
+      <div class="count">Showing <b>240</b> products</div>
+      <label class="sort">Sort:
+        <select><option>Price: Low → High</option><option>Price: High → Low</option></select>
+      </label>
+    </div>
+
+    <div class="cols">
+      <aside>
+        <h3>Category</h3>
+        <label class="facet"><input type="checkbox" checked /> Apparel</label>
+        <label class="facet"><input type="checkbox" /> Books</label>
+        <label class="facet"><input type="checkbox" checked /> Electronics</label>
+        <label class="facet"><input type="checkbox" /> Home</label>
+        <label class="facet"><input type="checkbox" /> Outdoors</label>
+        <label class="facet"><input type="checkbox" /> Toys</label>
+        <button class="clear">Clear all</button>
+      </aside>
+
+      <section>
+        <div class="chips">
+          <span class="chip">Apparel <button>×</button></span>
+          <span class="chip">Electronics <button>×</button></span>
+          <span class="chip" style="background:#fff;border-color:var(--line)"><button>Clear all</button></span>
+        </div>
+        <div class="grid">
+          <!-- card -->
+          <a class="card" href="#">
+            <div class="thumb"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect width='300' height='300' fill='%23e9ebef'/%3E%3C/svg%3E" /><span class="badge">Electronics</span></div>
+            <div class="name">Wireless Noise-Cancelling Headphones</div>
+            <div class="price">₴ 3 499.00</div>
+            <div class="stock">In stock</div>
+          </a>
+          <a class="card" href="#">
+            <div class="thumb"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect width='300' height='300' fill='%23e6e8ec'/%3E%3C/svg%3E" /><span class="badge">Apparel</span></div>
+            <div class="name">Merino Wool Crew Sweater</div>
+            <div class="price">₴ 1 250.00</div>
+            <div class="stock">In stock</div>
+          </a>
+          <a class="card" href="#">
+            <div class="thumb"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect width='300' height='300' fill='%23eaecf0'/%3E%3C/svg%3E" /><span class="badge">Electronics</span></div>
+            <div class="name">4K Action Camera with Stabilizer</div>
+            <div class="price">₴ 5 890.00</div>
+            <div class="stock out">Out of stock</div>
+          </a>
+          <a class="card" href="#">
+            <div class="thumb"><img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Crect width='300' height='300' fill='%23e9ebef'/%3E%3C/svg%3E" /><span class="badge">Apparel</span></div>
+            <div class="name">Waterproof Trail Running Jacket</div>
+            <div class="price">₴ 2 100.00</div>
+            <div class="stock">In stock</div>
+          </a>
+        </div>
+      </section>
+    </div>
+  </div>
+  <p class="note">Mock — Rozetka-inspired, desktop, data-honest. Chips = category badge + availability only (no ratings/seller/discounts). Cards link to the PDP; add-to-cart lives on the PDP (Epic 3).</p>
+</body>
+</html>

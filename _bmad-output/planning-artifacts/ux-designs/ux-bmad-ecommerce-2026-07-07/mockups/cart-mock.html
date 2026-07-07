@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Cart mock — bmad-ecommerce</title>
+<style>
+  :root { --green:#159f4a; --green-dark:#0f7d3a; --ink:#17181a; --muted:#6b7280; --line:#e5e7eb; --bg:#f4f5f7; --price:#d81e2c; --header:#1f1f1f; --radius:10px; }
+  *{box-sizing:border-box;} body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:var(--bg);}
+  header{background:var(--header);color:#fff;} .hbar{display:flex;align-items:center;gap:16px;max-width:1120px;margin:0 auto;padding:12px 20px;}
+  .logo{font-weight:800;font-size:20px;} .logo b{color:var(--green);}
+  .wrap{max-width:1120px;margin:0 auto;padding:20px;}
+  h1{font-size:26px;margin:6px 0 20px;}
+  .cols{display:grid;grid-template-columns:1fr 320px;gap:24px;align-items:start;}
+  .items{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:8px 18px;}
+  .row{display:grid;grid-template-columns:72px 1fr auto auto auto;gap:16px;align-items:center;padding:18px 0;border-bottom:1px solid var(--line);}
+  .row:last-child{border-bottom:none;}
+  .row img{width:72px;height:72px;object-fit:cover;border-radius:8px;background:#eef0f3;}
+  .pname{font-weight:600;font-size:15px;} .punit{color:var(--muted);font-size:13px;margin-top:4px;}
+  .qty{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;}
+  .qty button{border:none;background:#f3f4f6;width:34px;height:40px;font-size:18px;cursor:pointer;}
+  .qty input{width:42px;text-align:center;border:none;font-size:15px;}
+  .ltotal{font-weight:800;color:var(--price);font-size:17px;min-width:100px;text-align:right;}
+  .rm{border:none;background:none;color:var(--muted);cursor:pointer;font-size:20px;}
+  .summary{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:20px;position:sticky;top:20px;}
+  .summary h2{margin:0 0 14px;font-size:17px;}
+  .line{display:flex;justify-content:space-between;font-size:14px;margin:8px 0;color:#374151;}
+  .total{display:flex;justify-content:space-between;font-weight:800;font-size:20px;border-top:1px solid var(--line);margin-top:12px;padding-top:12px;}
+  .co{width:100%;background:var(--green);color:#fff;border:none;border-radius:8px;height:48px;font-size:16px;font-weight:700;cursor:pointer;margin-top:16px;}
+  .co:hover{background:var(--green-dark);}
+  .note{color:var(--muted);font-size:12.5px;margin-top:14px;}
+</style>
+</head>
+<body>
+  <header><div class="hbar"><div class="logo">BMAD <b>POC</b> Store</div></div></header>
+  <div class="wrap">
+    <h1>Your cart</h1>
+    <div class="cols">
+      <div class="items">
+        <div class="row">
+          <img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Crect width='72' height='72' fill='%23e9ebef'/%3E%3C/svg%3E" />
+          <div><div class="pname">Wireless Noise-Cancelling Headphones</div><div class="punit">₴ 3 499.00 each · Electronics</div></div>
+          <div class="qty"><button>−</button><input value="1" /><button>+</button></div>
+          <div class="ltotal">₴ 3 499.00</div>
+          <button class="rm" title="Remove">🗑</button>
+        </div>
+        <div class="row">
+          <img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='72' height='72'%3E%3Crect width='72' height='72' fill='%23e6e8ec'/%3E%3C/svg%3E" />
+          <div><div class="pname">Merino Wool Crew Sweater</div><div class="punit">₴ 1 250.00 each · Apparel</div></div>
+          <div class="qty"><button>−</button><input value="2" /><button>+</button></div>
+          <div class="ltotal">₴ 2 500.00</div>
+          <button class="rm" title="Remove">🗑</button>
+        </div>
+      </div>
+      <aside class="summary">
+        <h2>Order summary</h2>
+        <div class="line"><span>Subtotal (3 items)</span><span>₴ 5 999.00</span></div>
+        <div class="line"><span>Shipping (flat)</span><span>₴ 99.00</span></div>
+        <div class="total"><span>Order total</span><span>₴ 6 098.00</span></div>
+        <button class="co">Checkout</button>
+        <p class="note">Data-honest: unit price × qty = line total; Subtotal = Σ lines; Order total = Subtotal + flat shipping (no tax). Setting a qty to 0 removes the line (FR-9). No discounts, add-on services, or seller.</p>
+      </aside>
+    </div>
+  </div>
+</body>
+</html>

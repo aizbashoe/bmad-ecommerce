@@ -1,0 +1,103 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>PDP mock — bmad-ecommerce</title>
+<style>
+  :root {
+    --green: #159f4a; --green-dark: #0f7d3a;
+    --ink: #17181a; --muted: #6b7280; --line: #e5e7eb; --bg: #f4f5f7;
+    --price: #d81e2c; --badge: rgba(17,24,39,.82); --header: #1f1f1f; --radius: 10px;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, -apple-system, "Segoe UI", sans-serif; color: var(--ink); background: var(--bg); }
+  header { background: var(--header); color: #fff; }
+  .hbar { display: flex; align-items: center; gap: 16px; max-width: 1180px; margin: 0 auto; padding: 12px 20px; }
+  .logo { font-weight: 800; font-size: 20px; } .logo b { color: var(--green); }
+  .search { flex: 1; display: flex; }
+  .search input { flex: 1; border: none; border-radius: 8px 0 0 8px; padding: 11px 14px; }
+  .search button { border: none; background: var(--green); color: #fff; font-weight: 700; padding: 0 22px; border-radius: 0 8px 8px 0; }
+  .icons { display: flex; gap: 18px; font-size: 13px; color:#fff; }
+
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 18px 20px; }
+  .crumb { color: var(--muted); font-size: 13px; margin-bottom: 16px; }
+  .crumb a { color: var(--muted); text-decoration: none; } .crumb a:hover { color: var(--green-dark); }
+
+  .cols { display: grid; grid-template-columns: 1.15fr 1fr; gap: 28px; background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; }
+  /* gallery */
+  .gallery .main { position: relative; }
+  .gallery .main img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 10px; background: #eef0f3; }
+  .gallery .badge { position: absolute; top: 12px; left: 12px; background: var(--badge); color: #fff; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; padding: 4px 10px; border-radius: 999px; }
+  .thumbs { display: flex; gap: 10px; margin-top: 12px; }
+  .thumbs img { width: 64px; height: 64px; object-fit: cover; border-radius: 8px; border: 2px solid transparent; background:#eef0f3; cursor: pointer; }
+  .thumbs img.sel { border-color: var(--green); }
+
+  /* action panel */
+  .panel h1 { font-size: 22px; margin: 0 0 6px; line-height: 1.25; }
+  .panel .cat { color: var(--muted); font-size: 13px; margin-bottom: 18px; }
+  .stock { font-weight: 700; color: var(--green-dark); margin-bottom: 6px; }
+  .stock.out { color: #9ca3af; }
+  .price { color: var(--price); font-weight: 800; font-size: 30px; margin-bottom: 18px; }
+  .buyrow { display: flex; gap: 12px; align-items: center; margin-bottom: 10px; }
+  .qty { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .qty button { border: none; background: #f3f4f6; width: 38px; height: 46px; font-size: 18px; cursor: pointer; }
+  .qty input { width: 46px; text-align: center; border: none; font-size: 16px; }
+  .buy { flex: 1; background: var(--green); color: #fff; border: none; border-radius: 8px; height: 48px; font-size: 16px; font-weight: 700; cursor: pointer; }
+  .buy:hover { background: var(--green-dark); }
+  .buy:disabled { background: #cbd5e1; cursor: not-allowed; }
+  .epic3 { color: var(--muted); font-size: 12px; }
+
+  .about { background: #fff; border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; margin-top: 20px; }
+  .about h2 { font-size: 17px; margin: 0 0 10px; }
+  .about p { color: #374151; line-height: 1.65; margin: 0; }
+  .note { color: var(--muted); font-size: 12.5px; margin-top: 12px; }
+</style>
+</head>
+<body>
+  <header>
+    <div class="hbar">
+      <div class="logo">BMAD <b>POC</b> Store</div>
+      <form class="search" onsubmit="return false"><input placeholder="Search products…" /><button>Search</button></form>
+      <div class="icons"><span>♡ Wishlist</span><span>🛒 Cart</span></div>
+    </div>
+  </header>
+
+  <div class="wrap">
+    <nav class="crumb"><a href="#">Home</a> / <a href="#">Electronics</a> / Wireless Noise-Cancelling Headphones</nav>
+
+    <div class="cols">
+      <div class="gallery">
+        <div class="main">
+          <img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='560' height='560'%3E%3Crect width='560' height='560' fill='%23e9ebef'/%3E%3C/svg%3E" />
+          <span class="badge">Electronics</span>
+        </div>
+        <div class="thumbs">
+          <img class="sel" alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23e4e6ea'/%3E%3C/svg%3E" />
+          <img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23eaecf0'/%3E%3C/svg%3E" />
+          <img alt="" src="data:image/svg+xml;utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect width='64' height='64' fill='%23e4e6ea'/%3E%3C/svg%3E" />
+        </div>
+      </div>
+
+      <div class="panel">
+        <h1>Wireless Noise-Cancelling Headphones</h1>
+        <div class="cat">Category: Electronics</div>
+        <div class="stock">In stock</div>
+        <div class="price">₴ 3 499.00</div>
+        <div class="buyrow">
+          <div class="qty"><button>−</button><input value="1" /><button>+</button></div>
+          <button class="buy">Add to cart</button>
+        </div>
+        <div class="epic3">Add-to-cart &amp; quantity are wired in Epic 3 (guest cart). Shown here to lock the panel layout.</div>
+      </div>
+    </div>
+
+    <div class="about">
+      <h2>About this product</h2>
+      <p>Over-ear wireless headphones with active noise cancellation, 30-hour battery life, and a lightweight memory-foam headband. Bluetooth 5.3 with multipoint pairing and a USB-C quick charge. — This is the single <em>description</em> field from our data model; there is no specs table or reviews section (no such data in the POC).</p>
+    </div>
+
+    <p class="note">Mock — Rozetka-inspired, desktop, data-honest. Two-column (gallery / action panel), breadcrumb from category, availability + price. No Specs/Reviews/other-sellers tabs. Unknown id → a not-found state (see EXPERIENCE.md State Patterns).</p>
+  </div>
+</body>
+</html>

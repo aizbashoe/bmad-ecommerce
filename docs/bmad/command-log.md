@@ -17,7 +17,7 @@ Which BMAD skill (Claude Code skill / menu code) drives each phase, and what it 
 | Menu / "what next" | `bmad-help` | `BH` | (guidance only) |
 | 1 · Product Brief | `bmad-product-brief` | `CB` | `planning-artifacts/briefs/…/brief.md` |
 | 2 · PRD | `bmad-prd` | `PRD` | `planning-artifacts/prds/…/prd.md` |
-| (2 · UX — skipped) | `bmad-ux` | `CU` | *(not run — POC; review later)* |
+| 2 · UX | `bmad-ux` | `CU` | `planning-artifacts/ux-designs/ux-…/DESIGN.md` + `EXPERIENCE.md` + `mockups/` *(run 2026-07-07, after Epic 1)* |
 | 3 · Architecture | `bmad-architecture` | `CA` | `planning-artifacts/architecture/…/ARCHITECTURE-SPINE.md` |
 | 3 · Epics & Stories | `bmad-create-epics-and-stories` | `CE` | `planning-artifacts/epics.md` |
 | 3 · Readiness check | `bmad-check-implementation-readiness` | `IR` | `planning-artifacts/implementation-readiness-report-*.md` |
@@ -335,3 +335,24 @@ uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-retros
 (1.3→1.6, closed by query-fingerprint binding), loop-to-fill (Limit-before-Filter),
 dual-GSI facet, moto vs real-DynamoDB test fidelity. No re-planning required for Epic 2;
 Action Items 1 (frontend error envelope) & 2 (route-shadowing test) fold into story 2.1.
+
+### UX (skill: `bmad-ux`, `CU`) — 2026-07-07
+
+Ran the previously-skipped UX phase, seeded by two user-supplied Rozetka screenshots
+(PLP + PDP) as inspiration. Create mode; Fast/coaching hybrid; Reviewer Gate offered, not run.
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-ux --key workflow
+WS="_bmad-output/planning-artifacts/ux-designs/ux-bmad-ecommerce-2026-07-07"
+uv run _bmad/scripts/memlog.py init --workspace "$WS" --field topic="PLP/PDP UX for bmad-ecommerce"
+# 4 elicited decisions (data-fidelity, palette, PLP layout, form-factor) + 2 imports logged
+```
+
+**Decisions:** honest-to-our-data + category/availability badges (no fake ratings/discounts);
+Rozetka-inspired palette (green primary, red price accent, dark header); left-sidebar category
+facet; desktop-web only.
+**Output:** `ux-designs/ux-bmad-ecommerce-2026-07-07/` — `DESIGN.md` + `EXPERIENCE.md` (both
+`status: final`), `mockups/{plp,pdp,cart,checkout,order-summary}-mock.html`,
+`imports/ref-rozetka-{plp,pdp,cart,checkout}.md`. Covers the full purchase path (Epics 1–4);
+the spines were extended surface-by-surface as Artem supplied Rozetka PLP → PDP → cart →
+checkout references. Feeds Epic 2 (PDP) story 2.1, plus a future PLP restyle and Epics 3–4.
