@@ -1,5 +1,13 @@
 # Deferred Work
 
+## Deferred from: code review of story 3-1-establish-anonymous-guest-session (2026-07-07)
+
+- **`put_empty_cart` is an unconditional put (get-or-create race)** [backend/app/repositories/carts.py] — two concurrent first requests for the same guestId can both write; benign in 3.1 (empty carts are identical) but becomes a **cart-overwrite / line-item-loss** race once Story 3.2 stores items. **Action for 3.2:** put with `ConditionExpression="attribute_not_exists(guestId)"` and treat `ConditionalCheckFailedException` as "exists → re-read".
+- **`_from_item` discards stored `items`** [backend/app/repositories/carts.py] — hard-codes `items=[]`. Correct for 3.1; **Story 3.2 must parse the `L` list** (and add a non-empty round-trip test).
+- **No issuance enforcement / rate-limit on client-supplied UUIDs** [backend/app/services/cart.py] — any valid UUID in `X-Guest-Token` get-or-creates a cart, so a client can self-assign ids the server never issued (unbounded empty-cart writes). POC-acceptable (UUID4 entropy prevents cross-guest access); production should gate creation behind a server-issued signed token and/or rate-limit.
+- **`getCart` duplicates `get<T>`'s error-envelope/abort logic** [frontend/src/api/client.ts] — ~15 lines copied; factor a shared `parseError(res)` / `request` helper so the envelope contract can't drift between the two.
+- **`ResourceNotFoundException` (unprovisioned Carts table) not distinguished from a generic 500** [backend/app/repositories/carts.py] — a DynamoDB `ClientError` is enveloped as `internal_error` 500 by the global handler (not a raw crash), but a missing table looks like any other error. Add table-missing-specific handling if the provisioning step is ever skipped in a shared env.
+
 ## Deferred from: code review of story 5-1-align-plp-with-ux (2026-07-07)
 
 - **Card hover-lift not implemented** [frontend/src/pages/ProductListPage.tsx] — DESIGN.md (Elevation & Depth) + EXPERIENCE.md + `plp-mock.html` specify a `0 6px 18px rgba(0,0,0,.08)` hover lift on cards. Inline styles can't express `:hover`; needs a CSS-module or a `<style>` block. Fold into a small styling-polish pass (with the focus ring below).

@@ -399,6 +399,38 @@ First run (2026-07-07, scope = as-built backend docs): `architecture-backend.md`
 (no duplication). Added a `GET /products` request-flow **sequence** diagram to
 `api-contracts-backend.md` (it had none) in a `BMAD-MERMAID` marked region.
 
+### Epic 3 — Story 3.1 create-story (skill: `bmad-create-story`, `CS`) — 2026-07-07
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-create-story --key workflow
+# sprint-status: epic-3 -> in-progress, 3-1 -> ready-for-dev
+```
+
+**Output:** `_bmad-output/implementation-artifacts/3-1-establish-anonymous-guest-session.md` (**ready-for-dev**).
+Cart foundation (FR-7, AD-2/AD-3/AD-9): opaque guestId via X-Guest-Token (issue when absent, resolve
+when present, 400 on malformed), Carts table + CartsRepository (get-or-create empty cart), stateless,
+account-free; frontend localStorage token plumbing. Line items = Story 3.2 (out of scope here).
+
+#### Story 3.1 — dev-story + code-review (skills: `bmad-dev-story` `DS`, `bmad-code-review` `CR`) — 2026-07-07
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-dev-story --key workflow
+git rev-parse HEAD            # baseline_commit 437357d
+# backend: models/cart.py, repositories/carts.py, services/cart.py, api/cart.py (+ router),
+#   main.py CORS expose X-Guest-Token, scripts/provision.py; frontend: state/guestSession.ts + getCart
+cd backend && .venv/Scripts/python -m pytest -q     # -> 71 passed
+cd frontend && npm run build                         # -> tsc + vite build OK
+docker compose up -d --build api && docker compose exec -T api python -m scripts.provision
+# live: /cart issues X-Guest-Token; same token resolves same cart; malformed -> 400; uppercase/dashless canonicalize
+```
+
+- bmad-code-review: 3 parallel adversarial reviewers. Approve-with-patches → 2 patches
+  (UUID canonicalization `str(uuid.UUID(token))`; client `clearGuestToken` on `invalid_guest_token`)
+  + test hardening; 5 deferred (→ deferred-work.md). All 7 ACs pass. Story 3.1 **done**; epic-3 in-progress.
+
+<!-- Next: commits at the end for story 3.1; then Story 3.2 (add-to-cart, wires the PDP button). -->
+
+
 
 
 
