@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { ApiError, formatPrice, getProduct, type ProductDetail } from "../api/client";
+import { addToCart, ApiError, formatPrice, getProduct, type ProductDetail } from "../api/client";
+import { useCart } from "../state/cart";
 import { tokens } from "../theme/tokens";
 
 // PDP (Story 2.1): two-column layout (image gallery / action panel) + breadcrumb + About.
@@ -119,61 +120,7 @@ function ProductView({ product: p }: { product: ProductDetail }) {
         </div>
 
         {/* Action panel */}
-        <div>
-          <h1 style={{ fontSize: 22, margin: "0 0 6px", lineHeight: 1.25 }}>{p.name}</h1>
-          <div style={{ color: tokens.color.muted, fontSize: 13, marginBottom: 18 }}>Category: {p.category}</div>
-          <div
-            style={{
-              fontWeight: 700,
-              marginBottom: 6,
-              color: p.available ? tokens.color.stockIn : tokens.color.stockOut,
-            }}
-          >
-            {p.available ? "In stock" : "Out of stock"}
-          </div>
-          <div style={{ color: tokens.color.price, fontWeight: 800, fontSize: 30, marginBottom: 18 }}>
-            {formatPrice(p.price)}
-          </div>
-          <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10 }}>
-            <div
-              style={{
-                display: "inline-flex",
-                border: `1px solid ${tokens.color.line}`,
-                borderRadius: tokens.radius.sm,
-                overflow: "hidden",
-                opacity: 0.6,
-              }}
-            >
-              <button type="button" disabled style={{ border: "none", background: "#f3f4f6", width: 38, height: 46, fontSize: 18 }}>
-                −
-              </button>
-              <input value={1} readOnly aria-label="Quantity" style={{ width: 46, textAlign: "center", border: "none", fontSize: 16 }} />
-              <button type="button" disabled style={{ border: "none", background: "#f3f4f6", width: 38, height: 46, fontSize: 18 }}>
-                +
-              </button>
-            </div>
-            <button
-              type="button"
-              disabled
-              style={{
-                flex: 1,
-                background: "#cbd5e1",
-                color: "#fff",
-                border: "none",
-                borderRadius: tokens.radius.sm,
-                height: 48,
-                fontSize: 16,
-                fontWeight: 700,
-                cursor: "not-allowed",
-              }}
-            >
-              Add to cart
-            </button>
-          </div>
-          <div style={{ color: tokens.color.muted, fontSize: 12 }}>
-            Add-to-cart &amp; quantity are wired in Epic 3 (guest cart).
-          </div>
-        </div>
+        <AddToCartPanel product={p} />
       </div>
 
       <section
@@ -189,5 +136,84 @@ function ProductView({ product: p }: { product: ProductDetail }) {
         <p style={{ color: "#374151", lineHeight: 1.65, margin: 0 }}>{p.description}</p>
       </section>
     </>
+  );
+}
+
+// Action panel: quantity stepper + Add to cart (Story 3.2). Adds to the guest cart and refreshes
+// the header count. Disabled for out-of-stock products.
+function AddToCartPanel({ product: p }: { product: ProductDetail }) {
+  const { applyCart } = useCart();
+  const [qty, setQty] = useState(1);
+  const [busy, setBusy] = useState(false);
+  const [added, setAdded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const addedTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const disabled = !p.available || busy;
+
+  useEffect(() => () => {
+    if (addedTimer.current) clearTimeout(addedTimer.current); // clear on unmount
+  }, []);
+
+  async function onAdd() {
+    setBusy(true);
+    setError(null);
+    try {
+      const cart = await addToCart(p.productId, qty);
+      applyCart(cart); // update header count from the response — no extra round-trip
+      setAdded(true);
+      if (addedTimer.current) clearTimeout(addedTimer.current);
+      addedTimer.current = setTimeout(() => setAdded(false), 2000);
+    } catch {
+      setError("Could not add to cart.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  const stepBtn = { border: "none", background: "#f3f4f6", width: 38, height: 46, fontSize: 18, cursor: "pointer" } as const;
+
+  return (
+    <div>
+      <h1 style={{ fontSize: 22, margin: "0 0 6px", lineHeight: 1.25 }}>{p.name}</h1>
+      <div style={{ color: tokens.color.muted, fontSize: 13, marginBottom: 18 }}>Category: {p.category}</div>
+      <div style={{ fontWeight: 700, marginBottom: 6, color: p.available ? tokens.color.stockIn : tokens.color.stockOut }}>
+        {p.available ? "In stock" : "Out of stock"}
+      </div>
+      <div style={{ color: tokens.color.price, fontWeight: 800, fontSize: 30, marginBottom: 18 }}>
+        {formatPrice(p.price)}
+      </div>
+      <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 10 }}>
+        <div style={{ display: "inline-flex", border: `1px solid ${tokens.color.line}`, borderRadius: tokens.radius.sm, overflow: "hidden" }}>
+          <button type="button" onClick={() => setQty((q) => Math.max(1, q - 1))} disabled={disabled} aria-label="Decrease quantity" style={stepBtn}>
+            −
+          </button>
+          <input value={qty} readOnly aria-label="Quantity" style={{ width: 46, textAlign: "center", border: "none", fontSize: 16 }} />
+          <button type="button" onClick={() => setQty((q) => Math.min(999, q + 1))} disabled={disabled || qty >= 999} aria-label="Increase quantity" style={stepBtn}>
+            +
+          </button>
+        </div>
+        <button
+          type="button"
+          onClick={onAdd}
+          disabled={disabled}
+          style={{
+            flex: 1,
+            background: disabled ? "#cbd5e1" : tokens.color.green,
+            color: "#fff",
+            border: "none",
+            borderRadius: tokens.radius.sm,
+            height: 48,
+            fontSize: 16,
+            fontWeight: 700,
+            cursor: disabled ? "not-allowed" : "pointer",
+          }}
+        >
+          {busy ? "Adding…" : "Add to cart"}
+        </button>
+      </div>
+      {added && <div style={{ color: tokens.color.stockIn, fontSize: 13, fontWeight: 600 }}>Added to cart ✓</div>}
+      {error && <div style={{ color: tokens.color.error, fontSize: 13 }}>{error}</div>}
+      {!p.available && <div style={{ color: tokens.color.muted, fontSize: 12 }}>This item is out of stock.</div>}
+    </div>
   );
 }

@@ -119,40 +119,62 @@ export function getProduct(productId: string): Promise<ProductDetail> {
   return get<ProductDetail>(`/products/${encodeURIComponent(productId)}`);
 }
 
-// --- Cart / guest session (Story 3.1) ---
+// --- Cart / guest session (Stories 3.1-3.5) ---
 
 const GUEST_TOKEN_HEADER = "X-Guest-Token";
 
+export interface CartLine {
+  productId: string;
+  name: string;
+  unitPrice: number; // integer cents
+  imageUrl: string;
+  quantity: number;
+  lineTotal: number; // integer cents
+}
+
 export interface Cart {
   guestId: string;
-  items: []; // line items arrive in Story 3.2
+  items: CartLine[];
+  subtotal: number; // cents
+  shipping: number; // cents (0 when empty)
+  orderTotal: number; // cents
 }
 
 /**
- * Resolve (or establish) the anonymous cart (AD-2). Sends the stored guest token when present,
- * persists the token the API echoes back in the X-Guest-Token response header, and returns the
- * cart. Preserves the abort-timeout + {error:{code,message}} -> ApiError behavior of `get<T>`.
+ * Header-aware fetch for the cart endpoints (AD-2): sends the stored guest token, persists the
+ * token the API echoes back in X-Guest-Token, drops a rejected token, and maps the
+ * {error:{code,message}} envelope to ApiError. Preserves the abort-timeout contract of `get<T>`.
  */
-export async function getCart(timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<Cart> {
+async function cartFetch(
+  path: string,
+  init: { method?: string; body?: unknown } = {},
+  timeoutMs: number = DEFAULT_TIMEOUT_MS,
+): Promise<Cart> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const token = getGuestToken();
     const headers: Record<string, string> = {};
     if (token) headers[GUEST_TOKEN_HEADER] = token;
-    const res = await fetch(`${API_BASE_URL}/cart`, { headers, signal: controller.signal });
+    if (init.body !== undefined) headers["Content-Type"] = "application/json";
+    const res = await fetch(`${API_BASE_URL}${path}`, {
+      method: init.method ?? "GET",
+      headers,
+      body: init.body !== undefined ? JSON.stringify(init.body) : undefined,
+      signal: controller.signal,
+    });
     if (!res.ok) {
       let code = "http_error";
       let message = `Request failed: ${res.status}`;
       try {
-        const body = (await res.json()) as { error?: { code?: string; message?: string } };
-        if (body?.error?.code) code = body.error.code;
-        if (body?.error?.message) message = body.error.message;
+        const b = (await res.json()) as { error?: { code?: string; message?: string } };
+        if (b?.error?.code) code = b.error.code;
+        if (b?.error?.message) message = b.error.message;
       } catch (err) {
         if (controller.signal.aborted) throw err; // timeout/abort stays a generic error
       }
-      // A rejected token would wedge the session in a permanent 400 — drop it so the next
-      // call re-establishes a fresh guest session.
+      // A rejected token would wedge the session in a permanent 400 — drop it so the next call
+      // re-establishes a fresh guest session.
       if (code === "invalid_guest_token") clearGuestToken();
       throw new ApiError(res.status, code, message);
     }
@@ -162,6 +184,26 @@ export async function getCart(timeoutMs: number = DEFAULT_TIMEOUT_MS): Promise<C
   } finally {
     clearTimeout(timer);
   }
+}
+
+/** Resolve (or establish) the anonymous cart. */
+export function getCart(): Promise<Cart> {
+  return cartFetch("/cart");
+}
+
+/** Add a product to the cart (creates or increments the line). */
+export function addToCart(productId: string, quantity: number): Promise<Cart> {
+  return cartFetch("/cart/items", { method: "POST", body: { productId, quantity } });
+}
+
+/** Set a line item's quantity; 0 removes it. */
+export function updateCartItem(productId: string, quantity: number): Promise<Cart> {
+  return cartFetch(`/cart/items/${encodeURIComponent(productId)}`, { method: "PATCH", body: { quantity } });
+}
+
+/** Remove a line item from the cart. */
+export function removeCartItem(productId: string): Promise<Cart> {
+  return cartFetch(`/cart/items/${encodeURIComponent(productId)}`, { method: "DELETE" });
 }
 
 /** Format integer cents as a display price. The only place cents becomes a string (AD-6). */

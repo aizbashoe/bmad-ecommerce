@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { tokens } from "../theme/tokens";
+import { useCart } from "../state/cart";
 
 // Shared storefront shell header (Story 2.1). Wraps every page; the wordmark links home.
 // Search stays in the PLP body for now; the header search + live cart count arrive with the
 // PLP restyle and Epic 3 respectively.
 export default function StoreHeader() {
+  const { count } = useCart();
   return (
     <header style={{ background: tokens.color.header, color: "#fff", fontFamily: tokens.font }}>
       <div
@@ -30,7 +32,13 @@ export default function StoreHeader() {
         >
           BMAD <span style={{ color: tokens.color.green }}>POC</span> Store
         </Link>
-        <span style={{ marginLeft: "auto", fontSize: 13, opacity: 0.85 }}>🛒 Cart</span>
+        <Link
+          to="/cart"
+          aria-label={`Cart${count > 0 ? `, ${count} item${count === 1 ? "" : "s"}` : ""}`}
+          style={{ marginLeft: "auto", fontSize: 13, color: "#fff", textDecoration: "none" }}
+        >
+          🛒 Cart{count > 0 ? ` (${count})` : ""}
+        </Link>
       </div>
     </header>
   );
