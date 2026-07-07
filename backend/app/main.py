@@ -36,6 +36,9 @@ def create_app() -> FastAPI:
         allow_credentials=False,
         allow_methods=["*"],
         allow_headers=["*"],
+        # Let the browser read the issued guest token from the cart response (AD-2); custom
+        # response headers are hidden from cross-origin JS unless explicitly exposed.
+        expose_headers=["X-Guest-Token"],
     )
 
     app.add_exception_handler(AppError, app_error_handler)
