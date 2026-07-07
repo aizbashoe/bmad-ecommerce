@@ -29,6 +29,7 @@ Which BMAD skill (Claude Code skill / menu code) drives each phase, and what it 
 | 4 · Code Review | `bmad-code-review` | `CR` | review findings |
 | 4 · QA E2E tests | `bmad-qa-generate-e2e-tests` | `QA` | test suite |
 | 4 · Retrospective | `bmad-retrospective` | `ER` | retrospective notes |
+| Docs · Diagrams | `bmad-mermaid-diagrams` (custom) | `MD` | Mermaid diagrams embedded in docs (`docs/diagrams.md`) |
 
 Each `### Phase …` section below records the exact commands run for that phase, in order.
 
@@ -370,7 +371,28 @@ docker compose up -d --build frontend   # PLP 200; backend listing + /categories
   1 dismissed. All Epic 1 behavior preserved; deferred PLP invalid_cursor reset now done.
   Story 5.1 **done**, **epic-5 done**.
 
-<!-- Next: commits at the end for story 5.1 + the redo-story guide. -->
+<!-- Story 5.1 committed: b317d2d (frontend), 012a3b9 (docs), f6c5000 (rework guide). Epic 5 done. -->
+
+### Custom skill — `bmad-mermaid-diagrams` (menu `MD`) — 2026-07-07
+
+Hand-authored a new BMAD skill that generates Mermaid diagrams from the docs and embeds them into
+idempotent marked regions; integrated with `bmad-document-project`. Full design:
+[mermaid-diagrams-skill.md](mermaid-diagrams-skill.md).
+
+```bash
+# live install (gitignored dirs)
+#   .claude/skills/bmad-mermaid-diagrams/{SKILL.md,customize.toml,references/mermaid-patterns.md}
+#   _bmad/custom/bmad-document-project.toml   # [workflow].on_complete hand-off hook
+#   _bmad/_config/bmad-help.csv               # appended the MD registration row
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-mermaid-diagrams --key workflow           # resolves
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-document-project --key workflow.on_complete # DP hook merged
+# tracked source (since .claude/ + _bmad/ are gitignored): bmad-custom/skills/... + bmad-custom/config/...
+# dogfood output: docs/diagrams.md (5 diagrams from the real project)
+```
+
+**Skill:** `bmad-mermaid-diagrams` (`MD`) — component/layer, ER, sequence, state, hierarchy, process
+diagrams. **Integration:** DP `on_complete` offers a hand-off after doc generation. **Persistence:**
+tracked source in `bmad-custom/` + documented re-install steps (see the design doc §8).
 
 
 

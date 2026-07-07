@@ -12,5 +12,6 @@ documentation is one level up in [`docs/`](../index.md).)
 | [execution-report.md](execution-report.md) | Manifest of every step run and the actual files it produced |
 | [brownfield-guide.md](brownfield-guide.md) | How to adopt BMAD on an existing (brownfield) codebase — setup, architecture review, suggestions |
 | [authoring-skills.md](authoring-skills.md) | How to create a new BMAD skill (customize / BMad Builder / hand-author) and integrate it |
+| [mermaid-diagrams-skill.md](mermaid-diagrams-skill.md) | Design & details of the custom `bmad-mermaid-diagrams` skill (diagram catalog, integration, re-install) |
 
 Project overview: [../../README.md](../../README.md). Planning artifacts: `_bmad-output/planning-artifacts/`.
