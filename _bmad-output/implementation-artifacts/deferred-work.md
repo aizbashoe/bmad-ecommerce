@@ -1,5 +1,13 @@
 # Deferred Work
 
+## Deferred from: code review of Epic 4 checkout stories 4-1..4-4 (2026-07-07)
+
+- **Cart read→write is not conditional at placement** [backend/app/services/checkout.py + repositories/orders.py] — `place_order` snapshots the cart, then the transaction deletes whatever cart currently exists (no `ConditionExpression`). A concurrent add between the read and the transaction is dropped (order written without it). AD-7 makes write+delete atomic, not read→write. POC single-user; fix: carry a cart version/hash and add a `ConditionExpression` on the Delete, retry/409 on mismatch.
+- **`reference` has only 32 bits of entropy** [backend/app/services/checkout.py] — `ORD-<8 hex>` collides ~birthday-bound at scale; display-only (orderId is the key). Widen or derive from orderId if it's ever used for lookup/support.
+- **`guestId` (session bearer) returned in Order/Cart response bodies** [backend/app/api] — pre-existing Epic 3 pattern; anyone with a stored response payload holds the token that authorizes that guest's cart/orders. Omit `guestId` from the response projection (it isn't needed by the UI).
+- **Place-order client timeout after a server-side commit** [frontend/src/api/client.ts + pages/CheckoutPage.tsx] — a >5s `POST /checkout` that still commits leaves the client showing an unrecoverable error (retry → empty_cart). Reconcile the indeterminate state (e.g. treat as pending / look up the latest order) rather than presenting failure.
+- **No transaction-error-mapping test** [backend/tests] — the `place_order_txn` `ClientError` branch (409 vs re-raise) is untested (the fake never raises). Add a test that a non-cancellation `ClientError` surfaces as 500, not 409.
+
 ## Deferred from: code review of Epic 3 cart stories 3-2..3-5 (2026-07-07)
 
 - **First-contact guest-token race** [frontend/src/state/cart.tsx + api/client.ts] — on a first visit with no stored token, `CartProvider`'s mount `getCart()` and a PDP add can both go out tokenless, minting two guestIds; if the empty `getCart` resolves last, the just-added item is stranded under an orphaned token. POC single-user (small window). Fix: gate mutations on a resolved session (await the initial `getCart` / don't overwrite a stored token with a newly-minted one).

@@ -472,6 +472,35 @@ TransactWriteItems). Epic 4 prep: Orders table + OrdersRepository, atomic place-
 
 <!-- Next: Epic 4 (Guest Checkout & Order) — story 4.1. -->
 
+### Epic 4 — Guest Checkout & Order (stories 4.1-4.4) — create-story + dev-story + code-review — 2026-07-07
+
+Final epic. 4.1 shipping form → 4.2 simulated payment notice → 4.3 place order (immutable Order +
+atomic cart clear) → 4.4 order summary. 4.1 created + reviewed on its own; 4.2-4.4 built cohesively;
+one 3-lens review over the whole Epic-4 diff, per-story tracking.
+
+```bash
+# create-story x4; sprint-status epic-4 in-progress
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-dev-story --key workflow
+git rev-parse HEAD            # baseline 2742fb0
+# backend: core/guest.py (shared resolve), models/order.py (validated ShippingDetails + Order),
+#   repositories/orders.py (place_order_txn = TransactWriteItems Put order + Delete cart, AD-7),
+#   services/checkout.py, api/checkout.py (POST /checkout, GET /orders/{id}), provision Orders
+# frontend: client authedFetch<T> + placeOrder/getOrder, CheckoutPage (form+payment+place), OrderSummaryPage
+cd backend && .venv/Scripts/python -m pytest -q     # -> 93 passed
+cd frontend && npm run build                         # -> clean
+docker compose up -d --build api && docker compose exec -T api python -m scripts.provision  # Products, Carts, Orders
+# live E2E: add in-stock -> POST /checkout returns Order (ref/totals/ts) -> cart cleared atomically
+#   -> GET /orders/{id} owner 200 / wrong-token 404; empty-cart 409; invalid shipping 422
+```
+
+- bmad-code-review (3 lenses): Approve-with-patches → 5 patches (server-side shipping validation 422,
+  narrowed ClientError->409 mapping, navigate-before-refresh + empty_cart route, OrderSummary items
+  guard + createdAt, stale comment), 5 deferred (→ deferred-work.md). Money + atomicity (AD-6/AD-7)
+  verified. **Stories 4.1-4.4 done → epic-4 done. All four epics complete.** Findings in the 4-3 story.
+
+<!-- Next: Epic 4 retrospective (optional); the storefront is feature-complete (Epics 1-5). -->
+
+
 
 
 
