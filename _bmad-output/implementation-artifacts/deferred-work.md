@@ -1,5 +1,46 @@
 # Deferred Work
 
+## UX improvements (suggested, 2026-07-07)
+
+Curated UX/UI enhancements to raise the storefront from "functional POC" to "polished" — beyond the
+per-review polish items already listed below (card hover-lift, focus-ring token, image `onError`,
+breadcrumb→filtered-PLP, empty states). Grouped by surface; none are blockers. `[a11y]` = accessibility.
+
+### Cross-cutting
+- **Toast/notification system** — replace inline "Added to cart ✓" / error strings with a small toast (add-to-cart success, cart/checkout errors). Consistent, non-layout-shifting feedback. [frontend/src/components]
+- **Skeleton loaders** — swap the plain "Loading…" text on PLP/PDP/Cart/Checkout for content skeletons (card/row/panel placeholders) to reduce perceived latency.
+- **Responsive / mobile** — DESIGN.md is desktop-only for v1; add breakpoints (single-column grid, facet drawer, stacked checkout) so the storefront works on phones. [EXPERIENCE.md Responsive section]
+- **Header search** — the shared `StoreHeader` has no search box (deferred from the PLP restyle); wire a header search that drives the PLP `?search=`. Pairs with URL-driven filters.
+- **URL-driven PLP state** — put search/category/sort in the query string (`useSearchParams`) so results are shareable/back-button-safe; this also unblocks the deferred breadcrumb→filtered-PLP link.
+- **Currency/i18n** — `formatPrice` is hardcoded `$`; make the currency/locale configurable (the seed/mock used ₴). [frontend/src/api/client.ts]
+- **`prefers-reduced-motion`** — gate any added transitions/animations behind the media query. [a11y]
+
+### PLP
+- **Editable results affordances** — a "back to top" after long Load-more sessions; consider infinite-scroll vs the explicit button (keep the button for the opaque-cursor model, but focus the first newly-loaded card for keyboard users). [a11y]
+- **Per-category counts in the facet** — show counts next to each category (needs a cheap aggregate; currently omitted honestly).
+- **Active-filter summary** — "N results for 'term' in Electronics" context line above the grid.
+
+### PDP
+- **Add-to-cart feedback → toast + cart peek** — on add, briefly surface a mini cart summary (item added, N in cart) instead of the inline text.
+- **Related products** — "More in {category}" strip (reuses the category facet query). Adds discovery.
+- **Sticky action panel** — keep price + Add-to-cart in view while scrolling the description on tall pages.
+
+### Cart
+- **Editable quantity input** — allow typing a quantity (not just −/+), validated to 1–999; debounce the update.
+- **Mini-cart dropdown** — a header cart peek (line items + subtotal + Go-to-cart) without a full navigation.
+- **Undo remove** — a toast with "Undo" after removing a line (re-add from the snapshot).
+
+### Checkout
+- **Multi-step affordance** — a light progress indicator (Shipping → Payment → Confirm), even though it's one page, to orient the shopper.
+- **Field-level success ticks** — show a valid ✓ on completed fields, not just errors on invalid ones.
+- **Country as a searchable/typeahead select** — the list is short now, but typeahead scales better.
+
+### Accessibility (a11y) — beyond the deferred focus-ring
+- **`aria-live` regions** — announce async changes (cart count updates, PLP result refreshes, "Added to cart", "Order placed") to screen readers.
+- **Form errors wired to inputs** — link each error message to its field via `aria-describedby` + `aria-invalid` (partly present; make it consistent across checkout).
+- **Skip-to-content link** + semantic landmarks (`<nav>`, `<main>` present; add a skip link and ensure heading order).
+- **Contrast audit** — verify the red price accent and muted greys meet WCAG AA on the surfaces used.
+
 ## Deferred from: code review of Epic 4 checkout stories 4-1..4-4 (2026-07-07)
 
 - **Cart read→write is not conditional at placement** [backend/app/services/checkout.py + repositories/orders.py] — `place_order` snapshots the cart, then the transaction deletes whatever cart currently exists (no `ConditionExpression`). A concurrent add between the read and the transaction is dropped (order written without it). AD-7 makes write+delete atomic, not read→write. POC single-user; fix: carry a cart version/hash and add a `ConditionExpression` on the Delete, retry/409 on mismatch.

@@ -61,7 +61,7 @@ development_status:
   # Epic 2: Inspect a Product (PDP)
   epic-2: done
   2-1-view-product-detail: done
-  epic-2-retrospective: optional
+  epic-2-retrospective: done
 
   # Epic 3: Shopping Cart
   epic-3: done
@@ -83,7 +83,7 @@ development_status:
   # Epic 5: Storefront UX Alignment (added 2026-07-07 after the UX phase; pulled forward)
   epic-5: done
   5-1-align-plp-with-ux: done
-  epic-5-retrospective: optional
+  epic-5-retrospective: done
 
 action_items:
   - epic: 1

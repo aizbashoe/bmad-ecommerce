@@ -513,6 +513,20 @@ Epics 1-5 done. Retrospectives run: Epics 1, 3, 4 (Epic 2 & 5 were optional).
 
 <!-- Storefront feature-complete. Remaining = deferred-work backlog + AWS deploy enhancement (all optional). -->
 
+### Retros for Epic 2 & Epic 5 (backfilled) + deferred-work UX extension — 2026-07-07
+
+Ran the two previously-skipped optional retrospectives so all five epics have one, and extended
+`deferred-work.md` with a curated **UX-improvements** backlog.
+
+- `bmad-retrospective` (ER) → `epic-2-retro-2026-07-07.md` (PDP: shared shell/router seam, ApiError
+  pattern) + `epic-5-retro-2026-07-07.md` (PLP restyle: reworking-without-reopening, inline-style
+  `:hover`/`:focus` limits). `sprint-status`: `epic-2-retrospective` + `epic-5-retrospective` → **done**.
+  Retros now exist for all epics 1-5.
+- `deferred-work.md`: added "UX improvements (suggested)" — cross-cutting (toasts, skeletons,
+  responsive, header search, URL-driven state, i18n), per-surface (PLP/PDP/Cart/Checkout), and a11y
+  (aria-live, error wiring, skip-link, contrast). Planning backlog, all optional.
+
+
 
 
 
