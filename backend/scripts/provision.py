@@ -10,13 +10,15 @@ themselves (that would add per-request latency and couple the stateless API to p
 """
 
 from app.repositories.carts import CartsRepository
+from app.repositories.orders import OrdersRepository
 from app.repositories.products import ProductsRepository
 
 
 def provision() -> None:
     ProductsRepository().ensure_table()
     CartsRepository().ensure_table()
-    print("Provisioned tables: Products, Carts")
+    OrdersRepository().ensure_table()
+    print("Provisioned tables: Products, Carts, Orders")
 
 
 if __name__ == "__main__":

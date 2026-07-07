@@ -7,10 +7,9 @@ computed cart view (line totals + subtotal + flat shipping + order total). Money
 cents throughout (AD-6).
 """
 
-import uuid
-
 from app.core.config import get_settings
 from app.core.errors import AppError, NotFoundError
+from app.core.guest import resolve_guest_id
 from app.models.cart import Cart, CartItem, CartLine, CartView
 from app.repositories.carts import CartsRepository
 from app.repositories.products import ProductsRepository
@@ -28,20 +27,8 @@ class CartsService:
     # ---- guest session ----------------------------------------------------
 
     def resolve_guest_id(self, token: str | None) -> str:
-        """Issue (no token) or validate+canonicalize (token) the opaque guestId.
-
-        No token -> new UUID. A provided token must be a valid UUID (the id the API issued);
-        equivalent forms are canonicalized so one logical id maps to one cart key (FR-7);
-        malformed -> 400 invalid_guest_token (never an arbitrary partition key).
-        """
-        if not token:
-            return str(uuid.uuid4())
-        try:
-            return str(uuid.UUID(token))
-        except ValueError as exc:
-            raise AppError(
-                "Invalid guest token", code="invalid_guest_token", status_code=400
-            ) from exc
+        """Issue/validate/canonicalize the opaque guestId (shared with checkout)."""
+        return resolve_guest_id(token)
 
     def resolve_session(self, token: str | None) -> tuple[Cart, str]:
         """Resolve the session and its (get-or-created) cart. Returns (cart, guestId)."""
