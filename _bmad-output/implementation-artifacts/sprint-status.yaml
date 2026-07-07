@@ -41,7 +41,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 2026-07-06
-last_updated: 2026-07-07  # story 3.1 done (reviewed, patched); epic-3 in-progress
+last_updated: 2026-07-07  # epic-3 complete (stories 3.2-3.5 done, reviewed, patched)
 project: Anonymous E-Commerce Storefront
 project_key: NOKEY
 tracking_system: file-system
@@ -64,12 +64,12 @@ development_status:
   epic-2-retrospective: optional
 
   # Epic 3: Shopping Cart
-  epic-3: in-progress
+  epic-3: done
   3-1-establish-anonymous-guest-session: done
-  3-2-add-product-to-cart-from-pdp: backlog
-  3-3-view-cart-with-totals: backlog
-  3-4-update-line-item-quantity: backlog
-  3-5-remove-line-item: backlog
+  3-2-add-product-to-cart-from-pdp: done
+  3-3-view-cart-with-totals: done
+  3-4-update-line-item-quantity: done
+  3-5-remove-line-item: done
   epic-3-retrospective: optional
 
   # Epic 4: Guest Checkout & Order

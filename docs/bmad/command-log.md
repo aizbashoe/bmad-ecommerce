@@ -430,6 +430,33 @@ docker compose up -d --build api && docker compose exec -T api python -m scripts
 
 <!-- Next: commits at the end for story 3.1; then Story 3.2 (add-to-cart, wires the PDP button). -->
 
+### Epic 3 — Stories 3.2-3.5 (rest of the cart) — create-story + dev-story + code-review — 2026-07-07
+
+Implemented the cart aggregate cohesively (add → view+totals → update → remove) — one dev pass,
+one 3-lens review over the whole Epic-3 diff, per-story tracking.
+
+```bash
+# create-story x4 (3.2 add, 3.3 view+totals, 3.4 update, 3.5 remove) -> sprint-status ready-for-dev
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-dev-story --key workflow
+git rev-parse HEAD            # baseline e412f85
+# backend: models/cart.py (line items + CartView + requests), repositories/carts.py (items map + put_cart),
+#   services/cart.py (add/update/remove/_drop_line/to_view), api/cart.py (POST/GET/PATCH/DELETE)
+# frontend: client cartFetch + add/update/remove, state/cart.tsx (CartProvider), CartPage.tsx,
+#   StoreHeader count, PDP AddToCartPanel
+cd backend && .venv/Scripts/python -m pytest -q     # -> 85 passed
+cd frontend && npm run build                         # -> tsc + vite build OK
+docker compose up -d --build api && docker compose exec -T api python -m scripts.provision
+# live: add/increment/patch/patch-0-removes/delete + delete-missing 404 + add-unknown 404 + qty0 422 + oversize 422 + out-of-stock 409
+```
+
+- bmad-code-review (3 lenses): Approve-with-patches → 8 patches (server-side out-of-stock 409, quantity
+  cap 422, read-only get on update/remove, applyCart no-double-GET, mutate resync, unmount-safe timer,
+  aria plural, 3.4 AC wording), 5 deferred (→ deferred-work.md). All ACs 3.2-3.5 pass.
+  **Stories 3.2-3.5 done → epic-3 done.** Consolidated Review Findings in the 3-2 story file.
+
+<!-- Next: (per user) run /bmad-code-review as the formal closing review; then Epic 3 retrospective (optional) / Epic 4. -->
+
+
 
 
 

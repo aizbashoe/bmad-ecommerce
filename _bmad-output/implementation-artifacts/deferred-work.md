@@ -1,5 +1,13 @@
 # Deferred Work
 
+## Deferred from: code review of Epic 3 cart stories 3-2..3-5 (2026-07-07)
+
+- **First-contact guest-token race** [frontend/src/state/cart.tsx + api/client.ts] — on a first visit with no stored token, `CartProvider`'s mount `getCart()` and a PDP add can both go out tokenless, minting two guestIds; if the empty `getCart` resolves last, the just-added item is stranded under an orphaned token. POC single-user (small window). Fix: gate mutations on a resolved session (await the initial `getCart` / don't overwrite a stored token with a newly-minted one).
+- **`put_cart` has no conditional/optimistic write** [backend/app/repositories/carts.py] — concurrent mutations to the same cart last-write-wins (carried from 3.1's deferral, now real with line items). Fix: version attribute + `ConditionExpression`, or item-level updates instead of full-cart put.
+- **Cart-page mock deviations** [frontend/src/pages/CartPage.tsx] — the row omits the mock's category chip ("… each · Electronics") and the summary omits "Subtotal (N items)"; header hides the count at 0 (EXPERIENCE says "reads 0"). Minor visual; data-honest. Fold into a cart polish pass.
+- **`update_item` doesn't re-validate product availability** [backend/app/services/cart.py] — a line's quantity can be raised even if the product later went unavailable/was removed (snapshots are intentionally frozen). Acceptable at POC; revisit if stock enforcement must be continuous.
+- **Two GETs on cart-page mount + mutation still possible via `refresh` on other surfaces** — mostly resolved (mutations now `applyCart` the response); the mount `getCart` remains (needed to establish/load). No action unless the mount fetch becomes a hotspot.
+
 ## Deferred from: code review of story 3-1-establish-anonymous-guest-session (2026-07-07)
 
 - **`put_empty_cart` is an unconditional put (get-or-create race)** [backend/app/repositories/carts.py] — two concurrent first requests for the same guestId can both write; benign in 3.1 (empty carts are identical) but becomes a **cart-overwrite / line-item-loss** race once Story 3.2 stores items. **Action for 3.2:** put with `ConditionExpression="attribute_not_exists(guestId)"` and treat `ConditionalCheckFailedException` as "exists → re-read".
