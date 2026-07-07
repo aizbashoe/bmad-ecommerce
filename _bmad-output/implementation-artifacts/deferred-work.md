@@ -1,5 +1,15 @@
 # Deferred Work
 
+## Deferred from: code review of story 2-1-view-product-detail (2026-07-07)
+
+- **Breadcrumb category not navigable** [frontend/src/pages/ProductDetailPage.tsx] — the `{category}` crumb is a `<span>`, not a link (EXPERIENCE.md → Interaction Primitives specifies breadcrumb→category nav). Requires URL-driven PLP filters (currently in-component state). Do it with the **PLP-restyle story** (query-param facets).
+- **PLP does not reset the cursor on `invalid_cursor`** [frontend/src/pages/ProductListPage.tsx + api/client.ts] — the enabling `ApiError{code}` now exists (2.1); the PLP catch still shows generic copy. Now cheap: on `ApiError.code === "invalid_cursor"`, reset the cursor and refetch page 1. (Completes Epic 1 retro Action Item 1's second half.)
+- **No image `onError` fallback** [frontend PLP + PDP] — a broken/empty `imageUrl` shows the browser's broken-image glyph. Add an `onError` swap to a neutral placeholder (applies to both the PLP card and the PDP gallery).
+- **Empty `description` renders an empty "About this product" section** [frontend/src/pages/ProductDetailPage.tsx] — hide the section (or show a placeholder) when `description` is blank. Cosmetic; POC seed always populates it.
+- **PDP effect has no `AbortController` cleanup** [frontend/src/pages/ProductDetailPage.tsx] — the request-id guard prevents stale-state application, but the in-flight `getProduct` fetch isn't cancelled on unmount / id change (StrictMode double-fires in dev). Wire an abort signal into `getProduct` and abort in the effect cleanup.
+- **No frontend test runner** [frontend] — AC3/AC4/AC7 behavior is covered only by the build + live check (spec-permitted). Add Vitest + a client test (404 body → `ApiError{code:"not_found"}`; not-found vs generic branch) when the UI matures.
+- **`_from_item` bare `KeyError`** [backend/app/repositories/products.py] — reused by `get_product`; a partially-written item raises an opaque `KeyError` → 500. Still unreachable (repo owns all writes). Same long-standing deferral as 1.2/1.3.
+
 ## Deferred from: code review of story 1-5-filter-by-category-facet (2026-07-06)
 
 - **`gsi_listing` single hot partition** [backend/app/repositories/products.py] — every unfiltered/multi-category/search query hits one partition (`listingPk="PRODUCT"`) and filters within it; loop-to-fill amplifies reads. Fine at POC scale; beyond it, shard the listing partition (e.g. `listingPk = "PRODUCT#<n>"`) or move search/facets to OpenSearch (the AD-4 production path).

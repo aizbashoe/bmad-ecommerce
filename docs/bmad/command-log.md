@@ -322,6 +322,25 @@ two Epic 1 retro action items (route-shadow test; frontend error-envelope parsin
 
 <!-- Next: bmad-dev-story for 2.1, then bmad-code-review, then fine-grained commits. -->
 
+#### Story 2.1 — dev-story + code-review (skills: `bmad-dev-story` `DS`, `bmad-code-review` `CR`) — 2026-07-07
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-dev-story --key workflow
+git rev-parse HEAD            # baseline_commit 9592b68 stamped into story frontmatter
+# backend: ProductDetail + NotFoundError + CatalogService.get_product + /{product_id} route + tests
+# frontend: ApiError envelope parsing + getProduct; react-router-dom v7; StoreHeader + theme/tokens; ProductDetailPage
+cd backend && .venv/Scripts/python -m pytest -q      # -> 62 passed
+cd frontend && npm run build                          # -> tsc + vite build OK
+docker compose up -d --build api frontend             # live-verified detail/404/categories/SPA + oversized-id 422
+```
+
+- bmad-code-review: 3 parallel adversarial reviewers (Blind Hunter, Edge Case Hunter, Acceptance Auditor).
+  Approve-with-patches → 3 patches (product_id length cap, abort-relabel fix, 404 message assertion),
+  7 deferred (→ deferred-work.md), 2 dismissed. Both Epic 1 retro action items satisfied. Story 2.1 **done**.
+
+<!-- Next: fine-grained commits for story 2.1 (proposed, awaiting OK), then Epic 2 complete. -->
+
+
 
 ### Document Project (skill: `bmad-document-project`) — 2026-07-06
 

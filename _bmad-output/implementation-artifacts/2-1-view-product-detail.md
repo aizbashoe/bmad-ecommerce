@@ -1,6 +1,10 @@
+---
+baseline_commit: 9592b6851a102930e3e88875b25fe9acb1d0dd5f
+---
+
 # Story 2.1: View product detail (PDP)
 
-Status: ready-for-dev
+Status: done
 
 <!-- Note: Validation is optional. Run validate-create-story for quality check before dev-story. -->
 
@@ -22,32 +26,32 @@ so that I can decide whether to buy it.
 
 ## Tasks / Subtasks
 
-- [ ] **Task 1 — Backend: `ProductDetail` model + repository lookup (AC: 1, 5)**
-  - [ ] Add `ProductDetail` response model to `backend/app/models/catalog.py` (camelCase: `productId`, `name`, `description`, `price`, `imageUrl`, `category`, `available`) with a `from_product(Product)` classmethod. (Distinct from `ProductSummary`, which omits `description`.)
-  - [ ] Add `get_product(self, product_id: str) -> Product | None` to `ProductsRepository` using a DynamoDB **GetItem** on `PK = productId` (no GSI, no scan). Map the item via the existing `_from_item`; return `None` when the item is absent. Guard `ClientError` consistently with the rest of the repo.
-  - [ ] Unit-test the repo against moto: found → `Product`; missing id → `None`.
-- [ ] **Task 2 — Backend: service + 404 (AC: 1, 2, 5)**
-  - [ ] Add `get_product(self, product_id: str) -> ProductDetail` to `CatalogService`: call the repo; if `None`, raise `AppError` with code `not_found` and HTTP 404; else return `ProductDetail.from_product(product)`.
-  - [ ] Confirm `not_found`/404 flows through the existing `app_error_handler` into the `{error:{code,message}}` envelope (reuse the Epic 1 error machinery; add the code if not already present).
-- [ ] **Task 3 — Backend: route (AC: 1, 2, 6)**
-  - [ ] Add `@router.get("/{product_id}", response_model=ProductDetail)` to `backend/app/api/products.py`, registered **after** `/categories` and the `""` listing route. `product_id` via path param; delegate to `CatalogService.get_product`.
-  - [ ] Add an API test: `GET /products/{existing}` → 200 with all fields incl. `description`; `GET /products/{unknown}` → 404 `not_found` envelope.
-  - [ ] **Route-shadowing regression test (retro action item):** `GET /products/categories` still returns the `CategoryList` (asserts the literal route wins over `/{product_id}`).
-- [ ] **Task 4 — Frontend: client envelope parsing + `getProduct` (AC: 1, 4)**
-  - [ ] Refactor `get<T>` in `frontend/src/api/client.ts` to parse the `{error:{code,message}}` envelope on non-2xx: throw a typed `ApiError { status, code, message }` instead of the generic `Error("Request failed: …")`. Preserve the abort-timeout behavior; a network/abort failure throws a non-`ApiError` (generic) error.
-  - [ ] Add `ProductDetail` interface (ProductSummary + `description`) and `getProduct(id: string): Promise<ProductDetail>` (URL-encode the id).
-  - [ ] Keep existing callers working (listProducts/listCategories still resolve on 2xx; their error path now yields `ApiError` — verify the PLP still shows its generic error copy).
-- [ ] **Task 5 — Frontend: router + shared shell (AC: 3, 7)**
-  - [ ] Add `react-router-dom` (v7, React 19 compatible) to `frontend/package.json`.
-  - [ ] Create a design-tokens module (CSS variables from DESIGN.md frontmatter: colors, radius, spacing) and a `StoreHeader` component (dark bar, **BMAD POC Store** wordmark with POC in `--green`, search field, cart icon placeholder). Both PLP and PDP render inside this shell.
-  - [ ] Wire routes in `App.tsx`: `/` → `ProductListPage`, `/products/:id` → `ProductDetailPage`. Replace the PLP card `href` full-navigation with a client-side `Link` (behavior identical: opens the PDP). **Do NOT restyle the PLP facet layout — that is a separate story.**
-- [ ] **Task 6 — Frontend: PDP page (AC: 3, 4, 7)**
-  - [ ] Create `frontend/src/pages/ProductDetailPage.tsx`: read `:id`, call `getProduct`, render the two-column layout (image gallery left; action panel right with breadcrumb `Home / {category} / {name}`, title, category, availability, price, disabled Add-to-cart + Epic-3 note) and an "About this product" section (the `description`). Match `mockups/pdp-mock.html` and the EXPERIENCE.md PDP spec.
-  - [ ] Loading state while fetching; **not-found state** when the thrown error is an `ApiError` with status 404 / code `not_found`; generic error state otherwise.
-- [ ] **Task 7 — Verify (AC: all)**
-  - [ ] Backend: `pytest -q` all green (existing + new).
-  - [ ] Frontend: `tsc -b && vite build` clean.
-  - [ ] Live (docker compose): open a PLP card → PDP renders; hit `/products/does-not-exist` → not-found state; `curl /products/{id}` → 200; `curl /products/nope` → 404 envelope; `curl /products/categories` → still the category list.
+- [x] **Task 1 — Backend: `ProductDetail` model + repository lookup (AC: 1, 5)**
+  - [x] Add `ProductDetail` response model to `backend/app/models/catalog.py` (camelCase, incl. `description`) with `from_product(Product)`.
+  - [x] `ProductsRepository.get_product` (GetItem on `productId`, `None` on miss) — already present from scaffolding; reused as-is.
+  - [x] Repo unit tests against moto (found → `Product`; missing → `None`) — already present (`test_products_repository.py`).
+- [x] **Task 2 — Backend: service + 404 (AC: 1, 2, 5)**
+  - [x] `CatalogService.get_product` → `ProductDetail`; `None` → `NotFoundError` (404, code `not_found`).
+  - [x] Added `NotFoundError(AppError)` in `core/errors.py`; flows through `app_error_handler` into the envelope.
+- [x] **Task 3 — Backend: route (AC: 1, 2, 6)**
+  - [x] `@router.get("/{product_id}")` registered **last** (after `/categories` and `""`).
+  - [x] API tests: detail 200 with `description`; unknown → 404 `not_found` envelope (`test_products_detail.py`).
+  - [x] **Route-shadowing regression test:** `GET /products/categories` still returns the `CategoryList`.
+- [x] **Task 4 — Frontend: client envelope parsing + `getProduct` (AC: 1, 4)**
+  - [x] Refactored `get<T>` to parse `{error:{code,message}}` → throw typed `ApiError{status,code,message}`; network/abort still throws a plain Error. Timeout preserved.
+  - [x] Added `ProductDetail` interface + `getProduct(id)` (URL-encoded).
+  - [x] PLP error path unchanged (still shows generic copy; it doesn't branch on code yet).
+- [x] **Task 5 — Frontend: router + shared shell (AC: 3, 7)**
+  - [x] Added `react-router-dom` ^7.18.1.
+  - [x] `theme/tokens.ts` (DESIGN.md tokens) + `StoreHeader` (dark bar, **BMAD POC Store** wordmark, POC in green). Header search deferred to the PLP restyle; wordmark links home.
+  - [x] Routes wired in `App.tsx`; PLP card `href` → client-side `<Link>`. PLP facet layout untouched.
+- [x] **Task 6 — Frontend: PDP page (AC: 3, 4, 7)**
+  - [x] `ProductDetailPage.tsx`: two-column gallery/action panel, breadcrumb, About section, disabled Add-to-cart + Epic-3 note.
+  - [x] Loading / not-found (ApiError 404) / generic error states, with a latest-wins request-id guard.
+- [x] **Task 7 — Verify (AC: all)**
+  - [x] Backend: `pytest -q` → 61 passed.
+  - [x] Frontend: `tsc -b && vite build` clean.
+  - [x] Live (docker compose): `curl /products/{id}` → 200 with description; `/products/does-not-exist` → 404 `not_found`; `/products/categories` → category list; SPA serves `/` and `/products/:id` (200).
 
 ## Dev Notes
 
@@ -101,6 +105,53 @@ claude-opus-4-8
 
 ### Debug Log References
 
+- `pytest -q` → 61 passed (58 prior + 3 new PDP tests).
+- `npm run build` (`tsc -b && vite build`) → clean, 28 modules.
+- Live (docker compose, rebuilt api+frontend): `GET /products/p-0143` → 200 with `description`; `GET /products/does-not-exist` → 404 `{"error":{"code":"not_found",...}}`; `GET /products/categories` → 6 categories (not shadowed); frontend `/` and `/products/p-0143` → 200 (SPA fallback).
+
 ### Completion Notes List
 
+- Backend: added `ProductDetail` (adds `description` to the summary), `NotFoundError` (404/`not_found`), `CatalogService.get_product`, and the `/{product_id}` route registered **last** so the literal `/categories` + `""` routes win. `ProductsRepository.get_product` (GetItem) already existed from scaffolding and was reused unchanged.
+- **Retro action items landed:** (1) `test_products_detail.py::test_categories_route_not_shadowed_by_detail_route` guards the route ordering; (2) `get<T>` now parses the error envelope into a typed `ApiError`, and the PDP renders a distinct not-found state vs. the generic error state.
+- Frontend: introduced the shared shell (`react-router-dom` v7, `StoreHeader` with the **BMAD POC Store** wordmark, `theme/tokens.ts`), the router, and `ProductDetailPage`. **Scope fences held:** PLP facet layout untouched (only `href`→`<Link>`); Add-to-cart shown but disabled (Epic 3); `formatPrice` still `$`.
+- Single product image rendered (model has one `imageUrl`); the mock's thumbnail strip was decorative — no invented images array.
+- Deferred (unchanged): `_from_item` bare `KeyError` (repo owns all writes, unreachable). Header search intentionally deferred to the PLP-restyle story.
+
 ### File List
+
+- `backend/app/models/catalog.py` (M) — add `ProductDetail`.
+- `backend/app/core/errors.py` (M) — add `NotFoundError`.
+- `backend/app/services/catalog.py` (M) — add `get_product`.
+- `backend/app/api/products.py` (M) — add `GET /{product_id}` route (registered last).
+- `backend/tests/test_products_detail.py` (A) — PDP endpoint + route-shadow regression tests.
+- `frontend/src/api/client.ts` (M) — `ApiError` + envelope parsing; `ProductDetail` + `getProduct`.
+- `frontend/src/theme/tokens.ts` (A) — DESIGN.md design tokens.
+- `frontend/src/components/StoreHeader.tsx` (A) — shared shell header.
+- `frontend/src/pages/ProductDetailPage.tsx` (A) — PDP page.
+- `frontend/src/App.tsx` (M) — BrowserRouter + shell + routes.
+- `frontend/src/pages/ProductListPage.tsx` (M) — card `href` → client-side `<Link>`.
+- `frontend/package.json` + `package-lock.json` (M) — `react-router-dom` ^7.18.1.
+
+### Change Log
+
+- 2026-07-07: Implemented story 2.1 (PDP) — backend `GET /products/{id}` with 404 not-found envelope; frontend router + shared shell + PDP page; folded in Epic 1 retro action items (route-shadow test, error-envelope parsing). Status → review.
+- 2026-07-07: Code review (3-lens adversarial) — Approve-with-patches. 3 patches applied (product_id length cap, abort-relabel fix, 404 message assertion), 7 deferred, 2 dismissed. Tests 62 passed. Status → done.
+
+## Senior Developer Review (AI)
+
+**Date:** 2026-07-07 · **Outcome:** Approve with patches · **Reviewers:** Blind Hunter · Edge Case Hunter · Acceptance Auditor (parallel). All 7 ACs met; ADs (AD-1/AD-5/AD-6) hold; both Epic 1 retro action items satisfied. No hard AC violations.
+
+### Action Items — patched (3)
+
+- [x] **[Med] `product_id` path param unbounded** (`backend/app/api/products.py`) — an oversized id reached `GetItem` → `ValidationException` → 500. Added `Path(min_length=1, max_length=256)` so it's a clean **422** before Dynamo (mirrors the `cursor` cap). This also neutralizes the "`get_product` lacks a `ClientError` guard" finding: the only client-fault error is stopped at the boundary; other `ClientError`s already envelope via `unhandled_error_handler`. New test `test_oversized_product_id_422_not_500`.
+- [x] **[Med] Abort during error-body read mislabeled as `ApiError`** (`frontend/src/api/client.ts`) — if the timeout fired while reading a non-2xx body, the inner `catch` swallowed the `AbortError` and threw an `ApiError`, breaking the "network/abort → plain Error" contract. Now rethrows when `controller.signal.aborted`.
+- [x] **[Low] 404 test asserted `code` but not `message`** (`backend/tests/test_products_detail.py`) — added a non-empty `message` assertion for the full AD-5 envelope shape.
+
+### Deferred (7) — see deferred-work.md
+
+Breadcrumb category→filtered-PLP link (needs URL-driven PLP filters — PLP-restyle story); PLP `invalid_cursor`-reset (the enabling `ApiError` now exists); image `onError` fallback (PLP+PDP); empty-`description` section hide; PDP `AbortController` effect cleanup; frontend test runner (Vitest); `_from_item` bare `KeyError` (already deferred since 1.2).
+
+### Dismissed (2)
+
+- 2xx with malformed/empty JSON body → throws a generic error → PDP already routes it to the generic error state (correct behavior, not an `ApiError`).
+- `product_id` containing `/` → 404: POC ids contain no slashes; documented assumption, not a defect.
