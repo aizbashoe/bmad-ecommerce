@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Link } from "react-router-dom";
 import {
   formatPrice,
   listCategories,
@@ -180,9 +181,9 @@ export default function ProductListPage() {
         }}
       >
         {items.map((p) => (
-          <a
+          <Link
             key={p.productId}
-            href={`/products/${encodeURIComponent(p.productId)}`}
+            to={`/products/${encodeURIComponent(p.productId)}`}
             style={{
               position: "relative",
               border: "1px solid #e5e7eb",
@@ -223,7 +224,7 @@ export default function ProductListPage() {
             <div style={{ marginTop: "0.5rem", fontWeight: 600 }}>{p.name}</div>
             <div style={{ color: "#374151" }}>{formatPrice(p.price)}</div>
             {!p.available && <div style={{ color: "#9ca3af", fontSize: "0.85rem" }}>Out of stock</div>}
-          </a>
+          </Link>
         ))}
       </div>
 
