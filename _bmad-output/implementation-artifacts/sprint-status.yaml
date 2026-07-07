@@ -41,7 +41,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 2026-07-06
-last_updated: 2026-07-07  # epic-4 complete (checkout+order); all 4 epics done
+last_updated: 2026-07-07  # epic-4 retrospective done; project close-out
 project: Anonymous E-Commerce Storefront
 project_key: NOKEY
 tracking_system: file-system
@@ -78,7 +78,7 @@ development_status:
   4-2-complete-simulated-payment: done
   4-3-place-order: done
   4-4-view-order-summary: done
-  epic-4-retrospective: optional
+  epic-4-retrospective: done
 
   # Epic 5: Storefront UX Alignment (added 2026-07-07 after the UX phase; pulled forward)
   epic-5: done
@@ -105,16 +105,32 @@ action_items:
   - epic: 3
     action: "Epic 4 must place the order and clear the cart atomically via DynamoDB TransactWriteItems (AD-7) — the cart read-modify-write put is insufficient"
     owner: "Charlie"
-    status: open
+    status: done  # Story 4.3 place_order_txn
   - epic: 3
     action: "Provision the Orders table (extend scripts/provision.py) before Epic 4 dev; OrdersRepository owns it (AD-3)"
     owner: "Charlie"
-    status: open
+    status: done  # Story 4.3 + provision.py
   - epic: 3
     action: "Keep the two-pass review (inline 3-lens -> formal /bmad-code-review) for state-machine / regression-prone changes"
     owner: "Amelia"
-    status: open
+    status: done  # applied in Epic 4 (caught shipping-validation + ClientError-mapping)
   - epic: 3
     action: "Gate frontend cart/checkout mutations on a resolved guest session to close the first-contact token race"
+    owner: "Charlie"
+    status: open
+  - epic: 4
+    action: "Pre-prod concurrency hardening: cart-version ConditionExpression at placement + conditional cart writes"
+    owner: "Charlie"
+    status: open
+  - epic: 4
+    action: "Stop returning guestId (session bearer) in Order/Cart response bodies — project it out"
+    owner: "Charlie"
+    status: open
+  - epic: 4
+    action: "Add a frontend test runner (Vitest) + tests for cart mutation, checkout validation, not-found states"
+    owner: "Dana"
+    status: open
+  - epic: 4
+    action: "AWS deploy enhancement (NFR-2): ECS/Fargate + real DynamoDB (only local<->AWS diff is the endpoint, AD-8)"
     owner: "Charlie"
     status: open

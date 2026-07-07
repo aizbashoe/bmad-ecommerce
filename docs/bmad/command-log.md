@@ -498,7 +498,21 @@ docker compose up -d --build api && docker compose exec -T api python -m scripts
   guard + createdAt, stale comment), 5 deferred (→ deferred-work.md). Money + atomicity (AD-6/AD-7)
   verified. **Stories 4.1-4.4 done → epic-4 done. All four epics complete.** Findings in the 4-3 story.
 
-<!-- Next: Epic 4 retrospective (optional); the storefront is feature-complete (Epics 1-5). -->
+### Phase 4 — Epic 4 Retrospective (skill: `bmad-retrospective`, `ER`) — 2026-07-07 (project close-out)
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-retrospective --key workflow
+# epic-4 done (4/4); deep-read 4-1..4-4; Epic 3 retro follow-through (AI#1-3 done, AI#4 open); no next epic.
+```
+
+**Output:** `epic-4-retro-2026-07-07.md` (doubles as the project close-out). `sprint-status`:
+`epic-4-retrospective` → **done**; Epic 3 action items 1-3 marked done (atomic txn, Orders table,
+two-pass review — all landed in Epic 4), AI#4 (token race) still open; 4 Epic 4 action items appended
+(concurrency hardening, guestId-in-body, frontend test runner, AWS deploy). All 16 FRs delivered;
+Epics 1-5 done. Retrospectives run: Epics 1, 3, 4 (Epic 2 & 5 were optional).
+
+<!-- Storefront feature-complete. Remaining = deferred-work backlog + AWS deploy enhancement (all optional). -->
+
 
 
 
