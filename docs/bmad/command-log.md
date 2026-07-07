@@ -394,6 +394,11 @@ uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-docume
 diagrams. **Integration:** DP `on_complete` offers a hand-off after doc generation. **Persistence:**
 tracked source in `bmad-custom/` + documented re-install steps (see the design doc §8).
 
+First run (2026-07-07, scope = as-built backend docs): `architecture-backend.md` and
+`data-models-backend.md` already carried a layer flowchart / ERD from the DP scan → left untouched
+(no duplication). Added a `GET /products` request-flow **sequence** diagram to
+`api-contracts-backend.md` (it had none) in a `BMAD-MERMAID` marked region.
+
 
 
 
