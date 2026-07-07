@@ -4,7 +4,7 @@ import boto3
 import pytest
 from moto import mock_aws
 
-from app.models.cart import Cart
+from app.models.cart import Cart, CartItem
 from app.repositories import dynamodb as ddb_module
 from app.repositories.carts import CartsRepository
 
@@ -53,3 +53,17 @@ def test_put_then_get_roundtrips_empty_cart(repo):
     got = repo.get_cart("11111111-1111-1111-1111-111111111111")
     assert got == created
     assert got.items == []
+
+
+def test_put_cart_roundtrips_line_items(repo):
+    repo.ensure_table()
+    cart = Cart(
+        guest_id="22222222-2222-2222-2222-222222222222",
+        items=[
+            CartItem(product_id="p-1", name="Headphones", unit_price=3000, image_url="https://img/p-1", quantity=2),
+            CartItem(product_id="p-2", name="Sweater", unit_price=1250, image_url="https://img/p-2", quantity=1),
+        ],
+    )
+    repo.put_cart(cart)
+    got = repo.get_cart("22222222-2222-2222-2222-222222222222")
+    assert got == cart  # items (List of Maps) round-trip incl. integer cents

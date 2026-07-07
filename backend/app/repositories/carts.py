@@ -7,7 +7,7 @@ shape never leaks past this class. Line items arrive in Story 3.2.
 
 from botocore.exceptions import ClientError
 
-from app.models.cart import Cart
+from app.models.cart import Cart, CartItem
 from app.repositories import dynamodb
 
 
@@ -57,13 +57,39 @@ class CartsRepository:
 
     @staticmethod
     def _to_item(cart: Cart) -> dict:
-        # `items` is always an empty List here; Story 3.2 maps line items into it.
-        return {"guestId": {"S": cart.guest_id}, "items": {"L": []}}
+        # Line items are a DynamoDB List of Maps; money stays an integer Number (cents, AD-6).
+        return {
+            "guestId": {"S": cart.guest_id},
+            "items": {
+                "L": [
+                    {
+                        "M": {
+                            "productId": {"S": i.product_id},
+                            "name": {"S": i.name},
+                            "unitPrice": {"N": str(i.unit_price)},
+                            "imageUrl": {"S": i.image_url},
+                            "quantity": {"N": str(i.quantity)},
+                        }
+                    }
+                    for i in cart.items
+                ]
+            },
+        }
 
     @staticmethod
     def _from_item(item: dict) -> Cart:
-        # Line-item parsing arrives in Story 3.2; the cart is empty in 3.1.
-        return Cart(guest_id=item["guestId"]["S"], items=[])
+        lines = item.get("items", {}).get("L", [])
+        items = [
+            CartItem(
+                product_id=m["M"]["productId"]["S"],
+                name=m["M"]["name"]["S"],
+                unit_price=int(m["M"]["unitPrice"]["N"]),
+                image_url=m["M"]["imageUrl"]["S"],
+                quantity=int(m["M"]["quantity"]["N"]),
+            )
+            for m in lines
+        ]
+        return Cart(guest_id=item["guestId"]["S"], items=items)
 
     # ---- reads / writes ---------------------------------------------------
 
@@ -72,9 +98,12 @@ class CartsRepository:
         item = resp.get("Item")
         return self._from_item(item) if item else None
 
-    def put_empty_cart(self, guest_id: str) -> Cart:
-        """Create (or reset to) an empty cart for a guest. Callers use get-or-create, so this
-        only runs when no cart exists yet for the id."""
-        cart = Cart(guest_id=guest_id, items=[])
+    def put_cart(self, cart: Cart) -> Cart:
+        """Write the full cart item (read-modify-write). Callers mutate the aggregate then persist."""
         self._client.put_item(TableName=self._table, Item=self._to_item(cart))
         return cart
+
+    def put_empty_cart(self, guest_id: str) -> Cart:
+        """Create an empty cart for a guest. Callers use get-or-create, so this only runs when
+        no cart exists yet for the id."""
+        return self.put_cart(Cart(guest_id=guest_id, items=[]))
