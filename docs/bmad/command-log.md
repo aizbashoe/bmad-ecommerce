@@ -454,7 +454,24 @@ docker compose up -d --build api && docker compose exec -T api python -m scripts
   aria plural, 3.4 AC wording), 5 deferred (→ deferred-work.md). All ACs 3.2-3.5 pass.
   **Stories 3.2-3.5 done → epic-3 done.** Consolidated Review Findings in the 3-2 story file.
 
-<!-- Next: (per user) run /bmad-code-review as the formal closing review; then Epic 3 retrospective (optional) / Epic 4. -->
+<!-- /bmad-code-review run as the formal closing review (caught a HIGH regression, fixed). Epic 3 committed 8fcea3d/6d0716d/e37619f, pushed. -->
+
+### Phase 4 — Epic 3 Retrospective (skill: `bmad-retrospective`, `ER`) — 2026-07-07
+
+```bash
+uv run _bmad/scripts/resolve_customization.py --skill .claude/skills/bmad-retrospective --key workflow
+# discovered epic-3 done (5/5); deep-read 3-1..3-5 Review Findings + deferred-work; previewed Epic 4.
+```
+
+**Output:** `_bmad-output/implementation-artifacts/epic-3-retro-2026-07-07.md`.
+`sprint-status.yaml`: `epic-3-retrospective` → **done**; Epic 1 action items marked done/in-progress
+(follow-through); 4 Epic 3 action items appended. Key lessons: two-pass review caught a
+self-inflicted HIGH regression; server-side enforcement over client trust; UUID canonicalization;
+CORS expose-headers; read-modify-write cart insufficient for Epic 4's atomic order+clear (→ AD-7
+TransactWriteItems). Epic 4 prep: Orders table + OrdersRepository, atomic place-order.
+
+<!-- Next: Epic 4 (Guest Checkout & Order) — story 4.1. -->
+
 
 
 

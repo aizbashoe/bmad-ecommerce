@@ -41,7 +41,7 @@
 # - Retrospective appends its action items to action_items; sprint-status surfaces open ones
 
 generated: 2026-07-06
-last_updated: 2026-07-07  # epic-3 complete (stories 3.2-3.5 done, reviewed, patched)
+last_updated: 2026-07-07  # epic-3 retrospective done; action items recorded
 project: Anonymous E-Commerce Storefront
 project_key: NOKEY
 tracking_system: file-system
@@ -70,7 +70,7 @@ development_status:
   3-3-view-cart-with-totals: done
   3-4-update-line-item-quantity: done
   3-5-remove-line-item: done
-  epic-3-retrospective: optional
+  epic-3-retrospective: done
 
   # Epic 4: Guest Checkout & Order
   epic-4: backlog
@@ -89,16 +89,32 @@ action_items:
   - epic: 1
     action: "Parse the {error:{code,message}} envelope in the frontend API client; surface invalid_cursor distinctly and reset the cursor instead of a generic error"
     owner: "Charlie"
-    status: open
+    status: done  # 2.1 ApiError + 5.1 PLP invalid_cursor reset
   - epic: 1
     action: "Add route-shadowing regression test: /products/categories still resolves once the PDP /products/{id} route exists (land with story 2.1)"
     owner: "Dana"
-    status: open
+    status: done  # 2.1
   - epic: 1
     action: "Log review-deferred 'not bound to query / unbounded input' hazards as tracked design debt with a target story, not open-ended deferrals"
     owner: "Amelia"
-    status: open
+    status: done  # applied every review round -> deferred-work.md
   - epic: 1
     action: "Keep asserting cursor/pagination behavior against real-DynamoDB semantics, not moto defaults"
     owner: "Dana"
+    status: in-progress
+  - epic: 3
+    action: "Epic 4 must place the order and clear the cart atomically via DynamoDB TransactWriteItems (AD-7) — the cart read-modify-write put is insufficient"
+    owner: "Charlie"
+    status: open
+  - epic: 3
+    action: "Provision the Orders table (extend scripts/provision.py) before Epic 4 dev; OrdersRepository owns it (AD-3)"
+    owner: "Charlie"
+    status: open
+  - epic: 3
+    action: "Keep the two-pass review (inline 3-lens -> formal /bmad-code-review) for state-machine / regression-prone changes"
+    owner: "Amelia"
+    status: open
+  - epic: 3
+    action: "Gate frontend cart/checkout mutations on a resolved guest session to close the first-contact token race"
+    owner: "Charlie"
     status: open
